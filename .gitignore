@@ -4,3 +4,7 @@ venv/
 
 # Environment variables / Config secrets
 .env
+
+#Python specific when running
+__pycache__/
+db.sqlite3
