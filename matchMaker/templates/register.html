@@ -3,7 +3,8 @@
 <body>
 
 <h1>Register a New User</h1>
-<form>
+<form action="{% url 'matchMaker' %}" method="post">
+    <!--
     <label for="username"> Username:</label>
     <input type="text" id="username" name="username"><br>
     <label for="password"> Password:</label>
@@ -23,6 +24,22 @@
     <input type="date" id="dob" name="DOB"><br>
     <label for="profile">Profile Picture:</label>
     <input type="file" id="profile" name="profile"><br>
+-->
+    {% csrf_token %}
+    {{ form }}
     <input type="submit" value="Submit">
 
 </form>
+
+<!--
+
+<form action="{% url 'matchMaker' %}" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
+
+-->
+
+</body>
+</html>
