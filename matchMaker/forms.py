@@ -6,12 +6,6 @@ GENDER = {
     "O": "Other",
 }
 
-class ContactForm(forms.Form):
-    subject = forms.CharField(max_length=100)
-    message = forms.CharField(widget=forms.Textarea)
-    contact_email = forms.EmailField()
-    urgent = forms.BooleanField(required=False)
-
 class RegisterForm(forms.Form):
     username = forms.CharField(max_length=255)
     password = forms.CharField(max_length=255)
