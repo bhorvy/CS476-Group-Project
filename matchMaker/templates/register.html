@@ -3,7 +3,7 @@
 <body>
 
 <h1>Register a New User</h1>
-<form action="{% url 'matchMaker' %}" method="post">
+<form method="post">
     <!--
     <label for="username"> Username:</label>
     <input type="text" id="username" name="username"><br>
@@ -24,6 +24,8 @@
     <input type="date" id="dob" name="DOB"><br>
     <label for="profile">Profile Picture:</label>
     <input type="file" id="profile" name="profile"><br>
+
+    action="{% url 'matchMaker' %}"
 -->
     {% csrf_token %}
     {{ form }}
