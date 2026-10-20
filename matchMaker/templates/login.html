@@ -3,12 +3,14 @@
 <body>
 
 <h1>Log In</h1>
-<form action="{% url 'matchMaker' %}" method="post">
+<form method="post">
     <!--
     <label for="username"> Username:</label>
     <input type="text" id="username" name="username"><br>
     <label for="password"> Password:</label>
     <input type="password" id="password" name="password"><br>
+
+    action="{% url 'matchMaker' %}"
 -->
     {% csrf_token %}
     {{ form }}
