@@ -11,9 +11,9 @@ class RegisterForm(forms.Form):
     password = forms.CharField(max_length=255)
     first_name = forms.CharField(max_length=255)
     last_name = forms.CharField(max_length=255)
-    gender = forms.MultipleChoiceField(widget=forms.RadioSelect, choices=GENDER)
+    gender = forms.ChoiceField(widget=forms.RadioSelect, choices=GENDER)
     date_of_birth = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
-    img = forms.FileField(widget=forms.ClearableFileInput(attrs={"type": "file"}))
+    img = forms.FileField(widget=forms.ClearableFileInput(attrs={"type": "file"}), required=False)
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=255)
