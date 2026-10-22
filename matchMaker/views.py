@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
+from .models import Member
 
 from .forms import RegisterForm
 from .forms import LoginForm
@@ -17,6 +19,21 @@ def signUpPage(request):
         form = RegisterForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
+            User = get_user_model()
+            data = form.cleaned_data
+
+            user = User.objects.create_user(
+                username=data["username"],
+                password=data["password"],
+            )
+
+            Member.objects.create(
+                user=user,
+                firstname=data["first_name"],
+                lastname=data["last_name"],
+                gender=data["gender"],
+                DOB=data["date_of_birth"],
+            )
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
