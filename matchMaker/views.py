@@ -20,7 +20,7 @@ def signUpPage(request):
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            return HttpResponseRedirect('/matchMaker/loginPage/')
+            return HttpResponseRedirect('/loginPage/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
