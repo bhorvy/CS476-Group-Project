@@ -5,7 +5,8 @@ from django.conf import settings
 class Member(models.Model):
   user = models.OneToOneField(
       settings.AUTH_USER_MODEL,
-      on_delete=models.CASCADE
+      on_delete=models.CASCADE,
+      related_name='member',
   )
   firstname = models.CharField(max_length=255)
   lastname = models.CharField(max_length=255)
@@ -19,3 +20,11 @@ class Member(models.Model):
 
   def __str__(self):
     return f"{self.firstname} {self.lastname}"
+
+#subject to change just getting something down
+class Tournament(models.Model):
+  name = models.CharField(max_length=100);
+  description = models.CharField(max_length=255);
+
+
+
