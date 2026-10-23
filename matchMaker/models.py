@@ -26,5 +26,8 @@ class Tournament(models.Model):
   name = models.CharField(max_length=100);
   description = models.CharField(max_length=255);
 
-
-
+class Match(models.model):
+  player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')
+  player2 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player2') 
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) 
+  winner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='winner')
