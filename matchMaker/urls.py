@@ -5,4 +5,5 @@ urlpatterns = [
     path('', views.matchMaker, name='matchMaker'),
     path('signUpPage/', views.signUpPage, name='signUpPage'),
     path('loginPage/',  views.loginPage, name='loginPage'),
+    path('homePage/', views.homePage, name='homePage'),
 ]
