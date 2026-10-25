@@ -1,5 +1,6 @@
 body {
   background-image: linear-gradient(to top, white, turquoise);
+  background-repeat: no-repeat;
 }
 
 h1 {
@@ -11,6 +12,18 @@ margin-top: 150px;
 margin-bottom: 100 px;
 margin-left:500px;
 margin-right: 500px;
+}
+
+p {
+color: black;
+text-align:center;
+font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+a {
+color: black;
+text-align:center;
+font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 form {
