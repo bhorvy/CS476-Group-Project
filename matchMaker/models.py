@@ -31,3 +31,18 @@ class Match(models.Model):
   player2 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player2') 
   tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) 
   winner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='winner')
+
+#model for teams, ie who are the members and who is the captain
+class Team(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  tag = models.CharField(max_length=100, blank=True)
+  leader = models.ForeignKey(Member, on_delete=models.Protect, related_name='led_teams')
+  members = models.ManyToManyField(Member, related_name='teams', blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    return self.name
+#class GameAccount(models.Model):
+
+#class TournamentRegistration(models.Model):
+
+

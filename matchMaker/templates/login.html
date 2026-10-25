@@ -7,6 +7,11 @@
 <link rel="stylesheet" href="{% static 'style.css' %}">
 
 <h1>Log In</h1>
+{% if messages %}
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+{% endif %}
 <form method="post">
     <!--
     <label for="username"> Username:</label>

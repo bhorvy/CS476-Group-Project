@@ -7,6 +7,13 @@
 <link rel="stylesheet" href="{% static 'style.css' %}">
 
 <h1>MatchMaker</h1>
+{% if messages %}
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+{% endif %}
+<p>Welcome, {{ user.username }}.</p>
+<p><a href="{% url 'logoutPage' %}">Log out</a></p>
 
 </body>
 </html>
