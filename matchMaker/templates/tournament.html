@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'style.css' %}">
+
+<h1>{{ tournament.name }}</h1>
+
+{% for match in tournament.getBracket %}
+    <p>Match: {{ match }}</p>
+{% endfor %}
+
+</body>
+</html>

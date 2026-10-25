@@ -23,11 +23,13 @@ class Member(models.Model):
 
 #subject to change just getting something down
 class Tournament(models.Model):
-  name = models.CharField(max_length=100);
-  description = models.CharField(max_length=255);
+  name = models.CharField(max_length=100)
+  description = models.CharField(max_length=255)
+  layout = models.JSONField()
 
-class Match(models.Model):
-  player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')
-  player2 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player2') 
-  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) 
-  winner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='winner')
+
+#class Match(models.Model):
+#  player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')
+#  player2 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player2') 
+#  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) 
+#  winner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='winner')
