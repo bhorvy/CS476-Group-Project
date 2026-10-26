@@ -26,7 +26,11 @@ class Tournament(models.Model):
   name = models.CharField(max_length=100)
   description = models.CharField(max_length=255)
   layout = models.JSONField()
-
+#  layout note: The JSON currently is {"bracket": (3D array)}
+#  3D array structure: [round][match][player]
+#  player ids are stored in the array
+#  Example layout: {"bracket": [[[1, 2], [3, 4], [5, 6], [7, 8]], [[0, 0], [0, 0]], [[0, 0]]]}
+#       (0s denote null playerids)
 
 #class Match(models.Model):
 #  player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')

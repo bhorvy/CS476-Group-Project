@@ -5,12 +5,25 @@
 {% load static %}
 
 <link rel="stylesheet" href="{% static 'style.css' %}">
+<link rel="stylesheet" href="{% static 'tournament_instance.css' %}">
 
 <h1>{{ tournament.name }}</h1>
+<div id="tournament-bracket">
+    {% for round in tournament.getBracket %}
+    <div class="round-block">
+        {% for match in round %}
+        <div class="match-block">    
+            {% for player in match %}
+                <div class="player-block">
+                    <span>{{ player }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
 
-{% for match in tournament.getBracket %}
-    <p>Match: {{ match }}</p>
-{% endfor %}
 
 </body>
 </html>
