@@ -21,10 +21,30 @@ class Member(models.Model):
   def __str__(self):
     return f"{self.firstname} {self.lastname} ({self.user.username})"
 
-#subject to change just getting something down
+#model for tournaments, arguabably MOST IMPORTANT MODEL, so please change if you feel the need
 class Tournament(models.Model):
-  name = models.CharField(max_length=100);
-  description = models.CharField(max_length=255);
+  class TournmanentFormat(models.TextChoices):
+    SOLO = "SOLO", "1v1 SOLO"
+    FREE_FOR_ALL = "FFA", "Free For All"
+    TEAM = "TEAM", "Team"
+    OTHER = "OTHER", "Other"
+  class Status(models.TextChoices):
+    UPCOMING = "UPCOMING", "Upcoming"
+    ONGOING = "ONGOING", "Ongoing"
+    COMPLETED = "COMPLETED", "Completed"
+  name = models.CharField(max_length=100)
+  description = models.TextField(blank=True)
+  game_title = models.CharField(max_length=100)
+  format = models.CharField(max_length=10, choices=TournmanentFormat.choices, default=TournmanentFormat.SOLO)
+  status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
+  is_public = models.BooleanField(default=True)
+  max_participants = models.IntegerField(default=16)
+  min_rank = models.IntegerField(blank=True, null=True, default=0)
+  max_rank = models.IntegerField(blank=True, null=True, default=9999)
+  start_date = models.DateTimeField(null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    return f"{self.name} - ({self.game_title})"
 
 #model for registration status in tournaments for both teams and individuals
 class TournamentRegistration(models.Model):
