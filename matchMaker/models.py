@@ -25,7 +25,6 @@ class Member(models.Model):
 class Tournament(models.Model):
   class TournmanentFormat(models.TextChoices):
     SOLO = "SOLO", "1v1 SOLO"
-    FREE_FOR_ALL = "FFA", "Free For All"
     TEAM = "TEAM", "Team"
     OTHER = "OTHER", "Other"
   class Status(models.TextChoices):
@@ -64,11 +63,26 @@ class TournamentRegistration(models.Model):
     participant = self.member.user.username if self.member else self.team.name
     return f"{participant} -> {self.tournament.name} [{self.status}]"
 
+#model for matches
 class Match(models.Model):
-  player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')
-  player2 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player2') 
-  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) 
-  winner = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='winner')
+  tournament = models.ForiegnKey(Tournament, on_delete=models.CASCADE, related_name='matches')
+  round_number = models.PositiveIntegerField(default=1)
+  match_number = models.PositiveIntegerField(default=1)
+  player1 = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_as_p1')
+  player2 = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_as_p2')
+  team1 = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_as_t1')
+  team2 = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_as_t2')
+  score1 = models.IntegerField(default=0)
+  score2 = models.IntegerField(default=0)
+  submitted_by = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True, related_name='submitted_matches')
+  is_disputed = models.BooleanField(default=False)
+  is_completed = models.BooleanField(default=False)
+  winner_member = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True, related_name='solo_matches_won')
+  winner_team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='team_matches_won')
+  def __str__(self):
+    c1 = self.player1.user.username if self.player1 else (self.team1.name if self.team1 else "TBD")
+    c2 = self.player2.user.username if self.player2 else (self.team2.name if self.team2 else "TBD")
+    return f"{self.tournament.name} (R{self.round_number} M{self.match_number}) : {c1} vs {c2}"
 
 #model for teams, ie who are the members and who is the captain
 class Team(models.Model):
