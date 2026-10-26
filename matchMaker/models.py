@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
+#model for members, the users of the system
 class Member(models.Model):
   user = models.OneToOneField(
       settings.AUTH_USER_MODEL,
@@ -16,15 +16,33 @@ class Member(models.Model):
         OTHER = "O", "Other"
   gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
   DOB = models.DateField()
-  #image field can come once I learn how to implement it. 
+  profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
   def __str__(self):
-    return f"{self.firstname} {self.lastname}"
+    return f"{self.firstname} {self.lastname} ({self.user.username})"
 
 #subject to change just getting something down
 class Tournament(models.Model):
   name = models.CharField(max_length=100);
   description = models.CharField(max_length=255);
+
+#model for registration status in tournaments for both teams and individuals
+class TournamentRegistration(models.Model):
+  class RegistrationStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending Admin Approval"
+    ACCEPTED = "ACCEPTED", "Accepted"
+    REJECTED = "REJECTED", "Rejected"
+    INVITED = "INVITED", "Invited (Closed Bracket)"
+
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
+  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
+  team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
+  status = models.CharField(max_length=20, choices=RegistrationStatus.choices, default=RegistrationStatus.PENDING)
+  rejection_reason = models.CharField(max_length=255, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    participant = self.member.user.username if self.member else self.team.name
+    return f"{participant} -> {self.tournament.name} [{self.status}]"
 
 class Match(models.Model):
   player1 = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='player1')
@@ -53,20 +71,4 @@ class GameAccount(models.Model):
   def __str__(self):
     return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
 
-#model for registration status in tournaments for both teams and individuals
-class TournamentRegistration(models.Model):
-  class RegistrationStatus(models.TextChoices):
-    PENDING = "PENDING", "Pending Admin Approval"
-    ACCEPTED = "ACCEPTED", "Accepted"
-    REJECTED = "REJECTED", "Rejected"
-    INVITED = "INVITED", "Invited (Closed Bracket)"
 
-  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
-  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
-  team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
-  status = models.CharField(max_length=20, choices=RegistrationStatus.choices, default=RegistrationStatus.PENDING)
-  rejection_reason = models.CharField(max_length=255, blank=True)
-  created_at = models.DateTimeField(auto_now_add=True)
-  def __str__(self):
-    participant = self.member.user.username if self.member else self.team.name
-    return f"{participant} -> {self.tournament.name} [{self.status}]"
