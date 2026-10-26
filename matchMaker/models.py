@@ -42,6 +42,7 @@ class Team(models.Model):
   def __str__(self):
     return self.name
 
+#model for game accounts, ie the accounts that members have for games
 class GameAccount(models.Model):
   member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='game_accounts')
   game_title = models.CharField(max_length=100)
@@ -52,6 +53,20 @@ class GameAccount(models.Model):
   def __str__(self):
     return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
 
-#class TournamentRegistration(models.Model):
+#model for registration status in tournaments for both teams and individuals
+class TournamentRegistration(models.Model):
+  class RegistrationStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending Admin Approval"
+    ACCEPTED = "ACCEPTED", "Accepted"
+    REJECTED = "REJECTED", "Rejected"
+    INVITED = "INVITED", "Invited (Closed Bracket)"
 
-
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
+  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
+  team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
+  status = models.CharField(max_length=20, choices=RegistrationStatus.choices, default=RegistrationStatus.PENDING)
+  rejection_reason = models.CharField(max_length=255, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    participant = self.member.user.username if self.member else self.team.name
+    return f"{participant} -> {self.tournament.name} [{self.status}]"
