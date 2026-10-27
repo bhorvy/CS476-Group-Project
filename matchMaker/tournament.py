@@ -19,25 +19,36 @@ class TournamentInstance:
         # Mostly used for testing purposes. Will likely get deleted later on in the project.
         for roundId in range(len(self.layout["bracket"])-1):
             for matchId in range(len(self.layout["bracket"][roundId])):
-                player1 = self.layout["bracket"][roundId][matchId][0]
-                player2 = self.layout["bracket"][roundId][matchId][1]
-                #Handles null player slots (byes). If both players exist, randomly select.
-                if player1 == 0:
-                    winnerId = player2
-                elif player2 == 0:
-                    winnerId = player1
-                elif player1 and player2:
-                    winnerId = random.choice([player1, player2])
+                match = self.layout["bracket"][roundId][matchId]
+                player1_id = match["players"][0]["player_id"]
+                player2_id = match["players"][1]["player_id"]
+                
+                # Handles null player slots (byes). If both players exist, randomly select.
+                if player1_id == 0:
+                    winnerId = player2_id
+                elif player2_id == 0:
+                    winnerId = player1_id
+                elif player1_id and player2_id:
+                    winnerId = random.choice([player1_id, player2_id])
+                else:
+                    winnerId = 0
+                
+                # Update current match winner
+                match["winner_id"] = winnerId
+                
+                # Seed into the next round
                 self.handleWinner(roundId, matchId + 1, winnerId)
+
+    
 
     def handleWinner(self, roundId, matchId, winnerId):
         data = self.layout
-        nextRoundBracket = math.ceil(matchId / 2)
-        # Update the layout with the winner of the match
-        if matchId % 2 == 1:
-            data["bracket"][roundId + 1][nextRoundBracket - 1][0] = winnerId
-        else:
-            data["bracket"][roundId + 1][nextRoundBracket - 1][1] = winnerId
+        nextRoundMatchIndex = math.ceil(matchId / 2) - 1
+        playerSlotIndex = 0 if matchId % 2 == 1 else 1
+        
+        # Update the layout with the winner of the match in the next round's specific player slot
+        data["bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
+        
         # Save the updated layout back to the database
         self.object.layout = data
         self.object.save()
@@ -53,14 +64,13 @@ class TournamentCreate:
         self.layout = self.generateBracket(players)
         self.gameName = gameName
 
-
     def generateBracket(self, players):
         # 1v1 brackets single elim correlate with length of bits cleanly (i.e. 16 players has 4 rounds),
         # Many of the lines of code are based on this fact.
 
         numPlayers = len(players)
-        #Find the next power of 2 greater than or equal to numPlayers.
-        #If numPlayers is 17, 15 bye slots will have to be filled as 32 is the next power.
+        # Find the next power of 2 greater than or equal to numPlayers.
+        # If numPlayers is 17, 15 bye slots will have to be filled as 32 is the next power.
         nextPowerOf2 = 1 << (numPlayers - 1).bit_length()
         # Create a list of players with 0 for byes
         bracketPlayers = players + [0] * (nextPowerOf2 - numPlayers)
@@ -70,13 +80,31 @@ class TournamentCreate:
         bracket = []
         currentRound = []
         for i in range(0, len(bracketPlayers), 2):
-            currentRound.append([bracketPlayers[i], bracketPlayers[i + 1]])
+            match = {
+                "players": [
+                    {"player_id": bracketPlayers[i], "score": 0},
+                    {"player_id": bracketPlayers[i + 1], "score": 0}
+                ],
+                "winner_id": 0
+            }
+            currentRound.append(match)
         bracket.append(currentRound)
+        
         # Generate subsequent rounds with empty matches
         while len(currentRound) > 1:
-            nextRound = [[0, 0] for _ in range(len(currentRound) // 2)]
+            nextRound = []
+            for _ in range(len(currentRound) // 2):
+                match = {
+                    "players": [
+                        {"player_id": 0, "score": 0},
+                        {"player_id": 0, "score": 0}
+                    ],
+                    "winner_id": 0
+                }
+                nextRound.append(match)
             bracket.append(nextRound)
             currentRound = nextRound
+            
         return {"bracket": bracket}
 
     def createTournament(self):

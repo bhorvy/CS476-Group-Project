@@ -8,22 +8,35 @@
 <link rel="stylesheet" href="{% static 'tournament_instance.css' %}">
 
 <h1>{{ tournament.name }}</h1>
+
 <div id="tournament-bracket">
     {% for round in tournament.getBracket %}
-    <div class="round-block">
+    <div class="round">
         {% for match in round %}
-        <div class="match-block">    
-            {% for player in match %}
-                <div class="player-block">
-                    <span>{{ player }}</span>
-                </div>
+        <div class="match-block" data-winner="{{ match.winner_id }}">
+            {% for player in match.players %}
+            <div class="player-block">
+                <span class="player-id">
+                    {% if player.player_id == 0 %}
+                        
+                    {% else %}
+                        Player {{ player.player_id }}
+                    {% endif %}
+                </span>
+                <span class="player-score">
+                    {% if player.player_id == 0 %}
+                    
+                    {% else %}
+                        {{ player.score }}
+                    {% endif %}
+                </span>
+            </div>
             {% endfor %}
         </div>
         {% endfor %}
     </div>
     {% endfor %}
 </div>
-
 
 </body>
 </html>
