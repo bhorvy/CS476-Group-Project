@@ -7,6 +7,7 @@ from .models import Member
 
 from .forms import RegisterForm
 from .forms import LoginForm
+from .tournament import TournamentInstance
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -63,6 +64,9 @@ def loginPage(request):
 
     return render(request, 'login.html', {'form': form})
 
+def tournamentPage(request, tid):
+    tournament = TournamentInstance(tid)
+    return render(request, 'tournament.html', {'tournament': tournament})
 def homePage(request):
   template = loader.get_template('homepage.html')
   return HttpResponse(template.render())

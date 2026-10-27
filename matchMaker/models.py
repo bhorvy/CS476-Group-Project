@@ -10,6 +10,17 @@ class Member(models.Model):
   )
   firstname = models.CharField(max_length=255)
   lastname = models.CharField(max_length=255)
+
+#model for teams, ie who are the members and who is the captain
+class Team(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  tag = models.CharField(max_length=100, blank=True)
+  leader = models.ForeignKey(Member, on_delete=models.PROTECT, related_name='led_teams')
+  members = models.ManyToManyField(Member, related_name='teams', blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    return self.name
+  
   class Gender(models.TextChoices):
         MALE = "M", "Male"
         FEMALE = "F", "Female"
@@ -33,6 +44,12 @@ class Tournament(models.Model):
     COMPLETED = "COMPLETED", "Completed"
   name = models.CharField(max_length=100)
   description = models.TextField(blank=True)
+  layout = models.JSONField()
+#  layout note: The JSON currently is {"bracket": (3D array)}
+#  3D array structure: [round][match][player]
+#  player ids are stored in the array
+#  Example layout: {"bracket": [[[1, 2], [3, 4], [5, 6], [7, 8]], [[0, 0], [0, 0]], [[0, 0]]]}
+#       (0s denote null playerids)
   game_title = models.CharField(max_length=100)
   format = models.CharField(max_length=10, choices=TournmanentFormat.choices, default=TournmanentFormat.SOLO)
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
@@ -86,7 +103,7 @@ class GameAccount(models.Model):
 
 #model for matches
 class Match(models.Model):
-  tournament = models.ForiegnKey(Tournament, on_delete=models.CASCADE, related_name='matches')
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')
   round_number = models.PositiveIntegerField(default=1)
   match_number = models.PositiveIntegerField(default=1)
   player1 = models.ForeignKey(Member, on_delete=models.SET_NULL, null=True, blank=True, related_name='matches_as_p1')
@@ -104,5 +121,3 @@ class Match(models.Model):
     c1 = self.player1.user.username if self.player1 else (self.team1.name if self.team1 else "TBD")
     c2 = self.player2.user.username if self.player2 else (self.team2.name if self.team2 else "TBD")
     return f"{self.tournament.name} (R{self.round_number} M{self.match_number}) : {c1} vs {c2}"
-
-
