@@ -10,6 +10,16 @@ class Member(models.Model):
   )
   firstname = models.CharField(max_length=255)
   lastname = models.CharField(max_length=255)
+  class Gender(models.TextChoices):
+        MALE = "M", "Male"
+        FEMALE = "F", "Female"
+        OTHER = "O", "Other"
+  gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
+  DOB = models.DateField()
+  profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+
+  def __str__(self):
+    return f"{self.firstname} {self.lastname} ({self.user.username})"
 
 #model for teams, ie who are the members and who is the captain
 class Team(models.Model):
