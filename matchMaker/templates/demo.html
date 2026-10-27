@@ -2,7 +2,16 @@
 <html>
 <body>
 
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'style.css' %}">
+
 <h1>MatchMaker</h1>
+{% if messages %}
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+{% endif %}
 <p>You hit the landing site of our page!</p>
 
 <a href="signUpPage/">Sign Up</a>

@@ -56,7 +56,7 @@ def loginPage(request):
             # process the data in form.cleaned_data as required
             # ...
             # redirect to a new URL:
-            return HttpResponseRedirect('/matchMaker/')
+            return HttpResponseRedirect('/homePage/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -67,4 +67,9 @@ def loginPage(request):
 def tournamentPage(request, tid):
     tournament = TournamentInstance(tid)
     return render(request, 'tournament.html', {'tournament': tournament})
+def homePage(request):
+  template = loader.get_template('homepage.html')
+  return HttpResponse(template.render())
+
+
 

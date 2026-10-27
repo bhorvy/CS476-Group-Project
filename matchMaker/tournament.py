@@ -46,11 +46,12 @@ class TournamentInstance:
         self.object.delete()
 
 class TournamentCreate:
-    def __init__(self, name, description, players):
+    def __init__(self, name, description, players, gameName):
         self.name = name
         self.description = description
         self.players = players
         self.layout = self.generateBracket(players)
+        self.gameName = gameName
 
 
     def generateBracket(self, players):
@@ -80,6 +81,6 @@ class TournamentCreate:
 
     def createTournament(self):
         # Create a new Tournament instance and save it to the database
-        tournament = Tournament(name=self.name, description=self.description, layout=self.layout)
+        tournament = Tournament(name=self.name, description=self.description, layout=self.layout, game_title=self.gameName)
         tournament.save()
         return tournament
