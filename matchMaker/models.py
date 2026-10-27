@@ -53,10 +53,31 @@ class TournamentRegistration(models.Model):
     REJECTED = "REJECTED", "Rejected"
     INVITED = "INVITED", "Invited (Closed Bracket)"
 
+#model for teams, ie who are the members and who is the captain
+class Team(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  tag = models.CharField(max_length=100, blank=True)
+  leader = models.ForeignKey(Member, on_delete=models.Protect, related_name='led_teams')
+  members = models.ManyToManyField(Member, related_name='teams', blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    return self.name
+
+#model for game accounts, ie the accounts that members have for games
+class GameAccount(models.Model):
+  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='game_accounts')
+  game_title = models.CharField(max_length=100)
+  game_username = models.CharField(max_length=100)
+  external__player_id = models.CharField(max_length=100, blank=True)
+  rank_or_elo = models.IntegerField(blank=True, null=True)
+  last_synced = models.DateTimeField(auto_now=True)
+  def __str__(self):
+    return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
+
   tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
   member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
   team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
-  status = models.CharField(max_length=20, choices=RegistrationStatus.choices, default=RegistrationStatus.PENDING)
+  status = models.CharField(max_length=20, choices=TournamentRegistration.RegistrationStatus.choices, default=TournamentRegistration.RegistrationStatus.PENDING)
   rejection_reason = models.CharField(max_length=255, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   def __str__(self):
@@ -83,26 +104,5 @@ class Match(models.Model):
     c1 = self.player1.user.username if self.player1 else (self.team1.name if self.team1 else "TBD")
     c2 = self.player2.user.username if self.player2 else (self.team2.name if self.team2 else "TBD")
     return f"{self.tournament.name} (R{self.round_number} M{self.match_number}) : {c1} vs {c2}"
-
-#model for teams, ie who are the members and who is the captain
-class Team(models.Model):
-  name = models.CharField(max_length=100, unique=True)
-  tag = models.CharField(max_length=100, blank=True)
-  leader = models.ForeignKey(Member, on_delete=models.Protect, related_name='led_teams')
-  members = models.ManyToManyField(Member, related_name='teams', blank=True)
-  created_at = models.DateTimeField(auto_now_add=True)
-  def __str__(self):
-    return self.name
-
-#model for game accounts, ie the accounts that members have for games
-class GameAccount(models.Model):
-  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='game_accounts')
-  game_title = models.CharField(max_length=100)
-  game_username = models.CharField(max_length=100)
-  external__player_id = models.CharField(max_length=100, blank=True)
-  rank_or_elo = models.IntegerField(blank=True, null=True)
-  last_synced = models.DateTimeField(auto_now=True)
-  def __str__(self):
-    return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
 
 
