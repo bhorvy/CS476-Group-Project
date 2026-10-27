@@ -12,4 +12,11 @@
 
 .player-block{
     border: 1px solid black;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.player-block > span{
+    display: block;
 }
