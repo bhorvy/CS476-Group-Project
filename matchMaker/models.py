@@ -1,6 +1,11 @@
 from django.db import models
 from django.conf import settings
 
+class Gender(models.TextChoices):
+        MALE = "M", "Male"
+        FEMALE = "F", "Female"
+        OTHER = "O", "Other"
+
 #model for members, the users of the system
 class Member(models.Model):
   user = models.OneToOneField(
@@ -10,13 +15,9 @@ class Member(models.Model):
   )
   firstname = models.CharField(max_length=255)
   lastname = models.CharField(max_length=255)
-  class Gender(models.TextChoices):
-        MALE = "M", "Male"
-        FEMALE = "F", "Female"
-        OTHER = "O", "Other"
   gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
   DOB = models.DateField()
-  profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+  #profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
   def __str__(self):
     return f"{self.firstname} {self.lastname} ({self.user.username})"
@@ -37,7 +38,7 @@ class Team(models.Model):
         OTHER = "O", "Other"
   gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
   DOB = models.DateField()
-  profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+  #profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
   def __str__(self):
     return f"{self.firstname} {self.lastname} ({self.user.username})"
@@ -85,7 +86,7 @@ class GameAccount(models.Model):
   member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='game_accounts')
   game_title = models.CharField(max_length=100)
   game_username = models.CharField(max_length=100)
-  external__player_id = models.CharField(max_length=100, blank=True)
+  external_player_id = models.CharField(max_length=100, blank=True)
   rank_or_elo = models.IntegerField(blank=True, null=True)
   last_synced = models.DateTimeField(auto_now=True)
   def __str__(self):
