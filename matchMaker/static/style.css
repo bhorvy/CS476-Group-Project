@@ -39,11 +39,19 @@ font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans
 }
 
 #uname{
-  text-align:left;
+  margin-right:600px;
+  background-color:darkturquoise;
+  font-size: 20px;
+  font-weight:bold;
+  color: white;
 }
 
 #gaccount{
-  text-align: right;
+  margin-left:600px;
+  background-color:darkturquoise;
+  font-size: 20px;
+  font-weight:bold;
+  color: white;
 }
 
 form {
