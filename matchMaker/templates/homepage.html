@@ -6,8 +6,8 @@
 
 <link rel="stylesheet" href="{% static 'style.css' %}">
 
-<p><a id="uname">Username</a>
-  <a id="gaccount">Game Account</a>
+<p><a id="uname" href="{% url 'profilePage' %}">Username</a>
+  <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
 </p>
 
 <h1>MatchMaker</h1>
