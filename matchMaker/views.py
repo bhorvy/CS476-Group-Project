@@ -7,6 +7,7 @@ from .models import Member
 
 from .forms import RegisterForm
 from .forms import LoginForm
+from .forms import GameLinkForm
 from .tournament import TournamentInstance
 
 def matchMaker(request):
@@ -64,12 +65,39 @@ def loginPage(request):
 
     return render(request, 'login.html', {'form': form})
 
+def gameAccount(request):
+    # if this is a POST request we need to process the form data
+    if request.method == "POST":
+        # create a form instance and populate it with data from the request:
+        form = GameLinkForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/homePage/')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = GameLinkForm()
+
+    return render(request, 'gameacc.html', {'form': form})
+
 def tournamentPage(request, tid):
     tournament = TournamentInstance(tid)
     return render(request, 'tournament.html', {'tournament': tournament})
+
 def homePage(request):
   template = loader.get_template('homepage.html')
   return HttpResponse(template.render())
+
+def logoutPage(request):
+    template = loader.get_template('demo.html')
+    return HttpResponse(template.render())
+
+def profilePage(request):
+    template = loader.get_template('profile.html')
+    return HttpResponse(template.render())
 
 
 
