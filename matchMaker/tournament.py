@@ -112,3 +112,21 @@ class TournamentCreate:
         tournament = Tournament(name=self.name, description=self.description, layout=self.layout, game_title=self.gameName)
         tournament.save()
         return tournament
+
+class Scoring:
+    def __init__(self, tid):
+            self.object = Tournament.objects.get(id=tid)
+            self.layout = self.object.layout
+    # update the score after finding the round and match ID from the tournament, send in the playerId to update and the 
+    # the new score.
+    def updateScore(self, roundId, matchId, playerId, newScore):
+            #get match from the JSON
+            match = self.layout["bracket"][roundId][matchId] 
+            # find the player that matches the playerId and update their score. 
+            for player in match["players"]:
+                if player["player_id"] == playerId:
+                    player["score"] = newScore
+
+            self.object.layout = self.layout
+            self.layout.save()
+            return
