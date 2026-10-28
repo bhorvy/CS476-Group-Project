@@ -6,8 +6,9 @@
 
 <link rel="stylesheet" href="{% static 'style.css' %}">
 
-<p id="uname">Username</p>
-<p id="gaccount">Game Account</p>
+<p><a id="uname">Username</a>
+  <a id="gaccount">Game Account</a>
+</p>
 
 <h1>MatchMaker</h1>
 {% if messages %}
@@ -16,7 +17,7 @@
   {% endfor %}
 {% endif %}
 <p>Welcome, {{ user.username }}.</p>
-<p><a href="{% url 'logoutPage' %}">Log out</a></p>
+<p><a href="{% url 'loginPage' %}">Log out</a></p>
 
 </body>
 </html>
