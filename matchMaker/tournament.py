@@ -122,7 +122,7 @@ class Scoring:
     def updateScore(self, roundId, matchId, newScore):
             #get match from the JSON
             match = self.layout["bracket"][roundId][matchId] 
-            # find the player that matches the playerId and update their score.
+            # Update the scores based on array position of both the layout JSON and the array of new scores.
             for i in range(len(match["players"])):
                 match["players"][i]["score"] = newScore[i]
             #for player in match["players"]:

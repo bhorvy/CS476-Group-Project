@@ -55,12 +55,8 @@ class Tournament(models.Model):
     COMPLETED = "COMPLETED", "Completed"
   name = models.CharField(max_length=100)
   description = models.TextField(blank=True)
+  #layout contains the bracket structure, matchups, and scores for the tournament.
   layout = models.JSONField()
-#  layout note: The JSON currently is {"bracket": (3D array)}
-#  3D array structure: [round][match][player]
-#  player ids are stored in the array
-#  Example layout: {"bracket": [[[1, 2], [3, 4], [5, 6], [7, 8]], [[0, 0], [0, 0]], [[0, 0]]]}
-#       (0s denote null playerids)
   game_title = models.CharField(max_length=100)
   format = models.CharField(max_length=10, choices=TournmanentFormat.choices, default=TournmanentFormat.SOLO)
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)

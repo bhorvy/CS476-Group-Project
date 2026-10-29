@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from .models import Member
 from .models import Tournament
 from datetime import datetime
@@ -53,10 +53,14 @@ def loginPage(request):
         form = LoginForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            return HttpResponseRedirect('/homePage/')
+            username = request.POST["username"]
+            password = request.POST["password"]
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return HttpResponseRedirect('/homePage/')
+            else:
+                form.add_error(None, "Invalid username or password.")
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -83,14 +87,18 @@ def gameAccount(request):
     return render(request, 'gameacc.html', {'form': form})
 
 def tournamentPage(request, tid):
+    #This POST request is from the score submission popup.
     if(request.method == "POST"):
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
             obj = Scoring(tid)
+            #TODO: Modify updateScore parameters to submit proper round and match ids 
+            #   based on user accessing webpage (i.e. cookies for user).
             obj.updateScore(0,2, [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
-            print(form.cleaned_data)
             return redirect(request.path)
     tournament = TournamentInstance(tid)
+    if(request.user.is_authenticated):
+        print(request.user.username)
     return render(request, 'tournament.html', {'tournament': tournament})
 
 def tournamentCreatePage(request):
