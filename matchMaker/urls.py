@@ -9,5 +9,6 @@ urlpatterns = [
     path('homePage/', views.homePage, name='homePage'),
     path('profilePage/', views.profilePage, name='profilePage'),
     path('gameAccount/', views.gameAccount, name='gameAccount'),
-    path('create-tournament/', views.tournamentCreatePage, name='createTournament')
+    path('create-tournament/', views.tournamentCreatePage, name='createTournament'),
+    path('score-popup/', views.scorePopup, name='scorePopup')
 ]

@@ -20,3 +20,15 @@
 .player-block > span{
     display: block;
 }
+
+#score-popup{
+    position: fixed;
+    top: calc(50vh - 99px);
+    left: calc(50vw - 125px);
+    padding: 20px;
+    z-index: 1000;
+}
+
+#score-popup form{
+    margin: 0
+}

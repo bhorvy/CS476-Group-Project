@@ -119,14 +119,16 @@ class Scoring:
             self.layout = self.object.layout
     # update the score after finding the round and match ID from the tournament, send in the playerId to update and the 
     # the new score.
-    def updateScore(self, roundId, matchId, playerId, newScore):
+    def updateScore(self, roundId, matchId, newScore):
             #get match from the JSON
             match = self.layout["bracket"][roundId][matchId] 
-            # find the player that matches the playerId and update their score. 
-            for player in match["players"]:
-                if player["player_id"] == playerId:
-                    player["score"] = newScore
+            # find the player that matches the playerId and update their score.
+            for i in range(len(match["players"])):
+                match["players"][i]["score"] = newScore[i]
+            #for player in match["players"]:
+            #    if player["player_id"] == playerId:
+            #        player["score"] = newScore
 
             self.object.layout = self.layout
-            self.layout.save()
+            self.object.save()
             return

@@ -1,16 +1,13 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import get_user_model
 from .models import Member
 from .models import Tournament
 from datetime import datetime
-from .forms import RegisterForm
-from .forms import LoginForm
-from .forms import GameLinkForm
-from .forms import TournamentCreation
-from .tournament import TournamentInstance
+from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm
+from .tournament import TournamentInstance, Scoring
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -86,6 +83,13 @@ def gameAccount(request):
     return render(request, 'gameacc.html', {'form': form})
 
 def tournamentPage(request, tid):
+    if(request.method == "POST"):
+        form = ScoreSubmissionForm(request.POST)
+        if form.is_valid():
+            obj = Scoring(tid)
+            obj.updateScore(0,2, [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            print(form.cleaned_data)
+            return redirect(request.path)
     tournament = TournamentInstance(tid)
     return render(request, 'tournament.html', {'tournament': tournament})
 
@@ -132,5 +136,8 @@ def profilePage(request):
     template = loader.get_template('profile.html')
     return HttpResponse(template.render())
 
-
+def scorePopup(request):
+    if(request.method == "GET"):
+        form = ScoreSubmissionForm()
+        return render(request, 'modules/scoreSubmission.html', {'form': form})
 

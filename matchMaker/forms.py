@@ -39,4 +39,8 @@ class TournamentCreation(forms.Form):
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
     start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+
+class ScoreSubmissionForm(forms.Form):
+    player1_score = forms.IntegerField(min_value=0)
+    player2_score = forms.IntegerField(min_value=0)
     
