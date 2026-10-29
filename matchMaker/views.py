@@ -4,10 +4,12 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from .models import Member
-
+from .models import Tournament
+from datetime import datetime
 from .forms import RegisterForm
 from .forms import LoginForm
 from .forms import GameLinkForm
+from .forms import TournamentCreation
 from .tournament import TournamentInstance
 
 def matchMaker(request):
@@ -86,6 +88,37 @@ def gameAccount(request):
 def tournamentPage(request, tid):
     tournament = TournamentInstance(tid)
     return render(request, 'tournament.html', {'tournament': tournament})
+
+def tournamentCreatePage(request):
+    if request.method == "POST":
+           # create a form instance and populate it with data from the request:
+           form = TournamentCreation(request.POST)
+           # check whether it's valid:
+           if form.is_valid():
+               data = form.cleaned_data
+
+               tournament = Tournament.objects.create(
+                   name=data["tournament_name"],
+                   description=data["description"],
+                   game_title = data["game_title"],
+                   #generating an empty json bracket for now. Once registrations happen, then generate bracket  
+                   layout = {"bracket": []},
+                   status = "UPCOMING",
+                   is_public = True,
+                   min_rank = data["min_rank"],
+                   max_rank = data["max_rank"],
+                   max_participants = data["max_participants"],
+                   start_date = data["start_date"],
+                   created_at = datetime.now(),
+               )
+               # redirect to a newly created tournament URL:
+               return HttpResponseRedirect(f'/tournament/{tournament.id}/')
+   
+       # if a GET (or any other method) we'll create a blank form
+    else:
+        form = TournamentCreation()
+    # reusing the registation html file as it's just displaying a form. 
+    return render(request, 'register.html', {'form': form})
 
 def homePage(request):
   template = loader.get_template('homepage.html')

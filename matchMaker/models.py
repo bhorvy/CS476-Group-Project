@@ -66,8 +66,8 @@ class Tournament(models.Model):
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
   is_public = models.BooleanField(default=True)
   max_participants = models.IntegerField(default=16)
-  min_rank = models.IntegerField(blank=True, null=True, default=0)
-  max_rank = models.IntegerField(blank=True, null=True, default=9999)
+  min_rank = models.CharField(max_length=100)
+  max_rank = models.CharField(max_length=100)
   start_date = models.DateTimeField(null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   def __str__(self):
@@ -92,15 +92,17 @@ class GameAccount(models.Model):
   def __str__(self):
     return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
 
-  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
-  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
-  team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
-  status = models.CharField(max_length=20, choices=TournamentRegistration.RegistrationStatus.choices, default=TournamentRegistration.RegistrationStatus.PENDING)
-  rejection_reason = models.CharField(max_length=255, blank=True)
-  created_at = models.DateTimeField(auto_now_add=True)
-  def __str__(self):
-    participant = self.member.user.username if self.member else self.team.name
-    return f"{participant} -> {self.tournament.name} [{self.status}]"
+  # commenting this out for now, seems to be reimplementing the tournament model above
+
+  # tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
+  # member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
+  # team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
+  # status = models.CharField(max_length=20, choices=TournamentRegistration.RegistrationStatus.choices, default=TournamentRegistration.RegistrationStatus.PENDING)
+  # rejection_reason = models.CharField(max_length=255, blank=True)
+  # created_at = models.DateTimeField(auto_now_add=True)
+  # def __str__(self):
+  #   participant = self.member.user.username if self.member else self.team.name
+  #   return f"{participant} -> {self.tournament.name} [{self.status}]"
 
 #model for matches
 class Match(models.Model):
