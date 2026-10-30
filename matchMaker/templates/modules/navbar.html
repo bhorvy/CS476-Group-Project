@@ -1,0 +1,21 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'navbar.css' %}">
+
+<header id="navbar">
+    <nav>
+        <div class="nav-top">
+            <a href="/">{% include 'modules/svg/boxing-gloves.html' %}</a>
+            <a href="/tournament/">{% include 'modules/svg/tournamentIcon.html' %} Tournaments</a>
+        </div>
+        <div class="nav-bottom">
+            {% if user.is_authenticated %}
+                <a href="/profilePage/">{% include 'modules/svg/profileIcon.html' %} My Profile</a>
+                <a href="/logout/">{% include 'modules/svg/logoutIcon.html' %} Logout</a>
+            {% else %}
+                <a href="/loginPage/">{% include 'modules/svg/loginIcon.html' %} Login</a>   
+            {% endif %}
+        </div>
+        
+        
+    </nav>
+</header>

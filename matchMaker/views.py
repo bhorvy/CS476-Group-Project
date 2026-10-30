@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from .models import Member
 from .models import Tournament
 from datetime import datetime
@@ -136,9 +136,10 @@ def homePage(request):
   template = loader.get_template('homepage.html')
   return HttpResponse(template.render())
 
-def logoutPage(request):
-    template = loader.get_template('demo.html')
-    return HttpResponse(template.render())
+def logoutHandler(request):
+    if(request.user.is_authenticated):
+        logout(request)
+    return HttpResponseRedirect('/homePage/')
 
 def profilePage(request):
     template = loader.get_template('profile.html')
