@@ -1,26 +1,16 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends 'pageSkeleton.html' %}
 
-{% load static %}
-
-<link rel="stylesheet" href="{% static 'style.css' %}">
-
-<h1>Log In</h1>
-{% if messages %}
-  {% for message in messages %}
-    <p>{{ message }}</p>
-  {% endfor %}
-{% endif %}
-<form method="post">
-    {% csrf_token %}
-    {{ form }}
-    <a href = {% url 'signUpPage' %}>Don't have an account? Click here to register! </a> <br>
-    <input type="submit" value="Submit">
-    
-
-
-</form>
-
-</body>
-</html>
+{% block content %}
+  <h1>Log In</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+  <form method="post">
+      {% csrf_token %}
+      {{ form }}
+      <a href = {% url 'signUpPage' %}>Don't have an account? Click here to register! </a> <br>
+      <input type="submit" value="Submit">
+  </form>
+{% endblock %}

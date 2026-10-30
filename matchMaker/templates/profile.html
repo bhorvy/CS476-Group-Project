@@ -1,23 +1,17 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends 'pageSkeleton.html' %}
 
-{% load static %}
+{% block content %}
 
-<link rel="stylesheet" href="{% static 'style.css' %}">
+  <h1>User Profile</h1>
 
-<h1>User Profile</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
 
-{% if messages %}
-  {% for message in messages %}
-    <p>{{ message }}</p>
-  {% endfor %}
-{% endif %}
-
-<p>Username: {{ user.username }}</p>
-<p>Full Name: {{ user.firstname }} + {{ user.lastname }}</p>
-<p>Gender: {{ user.gender }}</p>
-<p>Date of Birth: {{ user.DOB }}</p>
-
-</body>
-</html>
+  <p>Username: {{ user.username }}</p>
+  <p>Full Name: {{ user.firstname }} + {{ user.lastname }}</p>
+  <p>Gender: {{ user.gender }}</p>
+  <p>Date of Birth: {{ user.DOB }}</p>
+{% endblock %}

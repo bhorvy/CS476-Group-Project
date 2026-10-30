@@ -1,23 +1,16 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends 'pageSkeleton.html' %}
 
-{% load static %}
+{% block content %}
+  <p><a id="uname" href="{% url 'profilePage' %}">Username</a>
+    <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
+  </p>
 
-<link rel="stylesheet" href="{% static 'style.css' %}">
-
-<p><a id="uname" href="{% url 'profilePage' %}">Username</a>
-  <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
-</p>
-
-<h1>MatchMaker</h1>
-{% if messages %}
-  {% for message in messages %}
-    <p>{{ message }}</p>
-  {% endfor %}
-{% endif %}
-<p>Welcome, {{ user.username }}.</p>
-<p><a href="{% url 'loginPage' %}">Log out</a></p>
-
-</body>
-</html>
+  <h1>MatchMaker</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+  <p>Welcome, {{ user.username }}.</p>
+  <p><a href="{% url 'loginPage' %}">Log out</a></p>
+{% endblock %}
