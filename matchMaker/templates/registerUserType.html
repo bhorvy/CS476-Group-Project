@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'style.css' %}">
+
+<h1>MatchMaker</h1>
+{% if messages %}
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+{% endif %}
+<p id="greeting">You hit the landing site of our page!</p>
+
+<a id="authlinks" href="{% url 'signUpPage' %}">User</a>
+<a id="authlinks" href="{% url 'registerAdmin' %}">Admin</a>
+
+</body>
+</html>
