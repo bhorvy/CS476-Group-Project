@@ -4,7 +4,8 @@
     width: 100px;
     top: 0;
     left: 0;
-    border-right: 2px solid black;
+    border-right: 2px solid turquoise;
+    background-color: #181818;
 }
 
 #navbar > nav {
@@ -15,7 +16,7 @@
 }
 
 #navbar a {
-    color: black;
+    color: white;
     text-decoration: none;
     font-size: 12px;
     padding: 10%;
@@ -31,10 +32,34 @@
 #navbar svg {
     width: 50%;
     height: 50%;
+    fill: white;
+}
+
+#navbar a:hover svg{
+    fill: turquoise;
+    transition-duration: 500ms;
 }
 
 #navbar #gloves-icon {
     width: 90%;
     height: 90%;
     margin-bottom: 30px;
+}
+
+#navbar #gloves-icon:hover > path:first-child{
+    fill: red;
+    transition-duration: 500ms;
+}
+
+#navbar #gloves-icon:hover > path:nth-child(2){
+    fill: blue;
+    transition-duration: 500ms;
+}
+
+.nav-top{
+    margin-top: 5px;
+}
+
+.nav-bottom {
+    margin-bottom: 20px;
 }
