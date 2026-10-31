@@ -39,7 +39,24 @@ class TournamentInstance:
                 # Seed into the next round
                 self.handleWinner(roundId, matchId + 1, winnerId)
 
-    
+    #findUserInBracket is used to find the first instance of a user in a tournament bracket
+    #   starting from the latest point in the bracket. This is used solely to determine which
+    #   match a user can edit, given older matches should not be edited. Returns null if no 
+    #   instance of that user is found.
+    def findUserInBracket(self, uid):
+        #Highest round and decrements
+        for i in range(len(self.layout["bracket"]) - 1, -1, -1):
+            for j in range(0, len(self.layout["bracket"][i])):
+                for k in range(0, len(self.layout["bracket"][i][j]["players"])):
+                    if self.layout["bracket"][i][j]["players"][k]["player_id"] == uid:
+                        return {"round_id": i, "match_id": j}
+
+        return None
+
+    #Function to determine if a match has is a completed match. Determined by the simple logic that
+    #   if a winner_id is 0 (null), a winner is not decided. Therefore match is not complete.
+    def IsMatchComplete(self, roundId, matchId):
+        return self.object.layout["bracket"][roundId][matchId]["winner_id"] > 0
 
     def handleWinner(self, roundId, matchId, winnerId):
         data = self.layout
@@ -48,10 +65,26 @@ class TournamentInstance:
         
         # Update the layout with the winner of the match in the next round's specific player slot
         data["bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
+
+        #Update the winner_id field of the completed match to denote it is completed.
+        data["bracket"][roundId][matchId]["winner_id"] = winnerId
         
         # Save the updated layout back to the database
         self.object.layout = data
         self.object.save()
+
+    #If a winner is to be called, compare the scores and move the bracket accordingly. Equal scores
+    #   can not be accepted as no winner can be determined.
+    def determineWinner(self, roundId, matchId):
+            player1Score = self.layout["bracket"][roundId][matchId]["players"][0]["score"]
+            player2Score = self.layout["bracket"][roundId][matchId]["players"][1]["score"]
+            if player1Score > player2Score:
+                self.handleWinner(roundId, matchId, self.layout["bracket"][roundId][matchId]["players"][0]["player_id"])
+                return True
+            elif player2Score > player1Score:
+                self.handleWinner(roundId, matchId, self.layout["bracket"][roundId][matchId]["players"][1]["player_id"])
+                return True
+            return False
 
     def deleteTournament(self):
         self.object.delete()
@@ -112,6 +145,7 @@ class TournamentCreate:
         tournament = Tournament(name=self.name, description=self.description, layout=self.layout, game_title=self.gameName)
         tournament.save()
         return tournament
+
 
 class Scoring:
     def __init__(self, tid):
