@@ -7,7 +7,6 @@ import pdb
 class TournamentInstance:
     def __init__(self, tid):
         self.object = Tournament.objects.get(id=tid)
-        self.id = self.object.id
         self.name = self.object.name
         self.description = self.object.description
         self.layout = self.object.layout

@@ -210,7 +210,7 @@ def manageTournament(request, tid):
             # redirect to a newly updated tournament URL:
             return HttpResponseRedirect(f'/tournament/{tournament.id}/')
 
-        # if a GET (or any other method) we'll create a blank form
+        # if a GET (or any other method) we'll get the tournamenet with its information
     else:
         form = ManageTournament(initial={
             "tournament_name": tournament.name,
