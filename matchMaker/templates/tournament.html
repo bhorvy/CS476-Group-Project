@@ -4,8 +4,8 @@
 {% block content %}
     <link rel="stylesheet" href="{% static 'tournament_instance.css' %}">
     <script>
-        function testFunction() {
-            fetch("{% url 'scorePopup' %}", {
+        function showScoreSubmission() {
+            fetch("/score-popup?roundId={{ round }}&matchId={{ match }}", {
                 method: 'GET',
                 
                 headers: {
@@ -30,6 +30,7 @@
             <div class="match-block match-{{ forloop.counter }}">
                 {% for player in match.players %}
                 <div class="player-block">
+                    <!-- Null player ids leave the user slot blank -->
                     <span class="player-id">
                         {% if player.player_id == 0 %}
                             
@@ -51,7 +52,9 @@
         </div>
         {% endfor %}
     </div>
-    <button onclick="testFunction()">Test Button</button>
+    {% if score_submittable %}
+        <button onclick="showScoreSubmission()">Submit Score</button>
+    {% endif %}
     <div id="score-popup"></div>
 
     <!-- Wrap logic around if the user is an admin they can manage the tournament -->

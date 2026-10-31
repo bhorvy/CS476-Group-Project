@@ -45,6 +45,16 @@ class TournamentCreation(forms.Form):
 class ScoreSubmissionForm(forms.Form):
     player1_score = forms.IntegerField(min_value=0)
     player2_score = forms.IntegerField(min_value=0)
+    roundVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
+    matchVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        self.matchId = kwargs.pop('match_id', None)
+        self.roundId = kwargs.pop('round_id', None)
+        super().__init__(*args, **kwargs)
+        self.fields['roundVal'].initial = self.roundId
+        self.fields['matchVal'].initial = self.matchId
+
 
 class ManageTournament(forms.Form):
     participants = forms.ModelMultipleChoiceField(

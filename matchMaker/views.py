@@ -87,6 +87,7 @@ def gameAccount(request):
     return render(request, 'gameacc.html', {'form': form})
 
 def tournamentPage(request, tid):
+    scoreSubmittable = False
     #This POST request is from the score submission popup.
     if(request.method == "POST"):
         form = ScoreSubmissionForm(request.POST)
@@ -94,12 +95,16 @@ def tournamentPage(request, tid):
             obj = Scoring(tid)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
-            obj.updateScore(0,2, [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            obj.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
+                            [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
             return redirect(request.path)
     tournament = TournamentInstance(tid)
     if(request.user.is_authenticated):
-        print(request.user.username)
-    return render(request, 'tournament.html', {'tournament': tournament})
+        userPos = tournament.findUserInBracket(request.user.id)
+        scoreSubmittable = (userPos != None) and not tournament.IsMatchComplete(userPos["round_id"], userPos["match_id"])
+        return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable,
+                                                       'round': userPos["round_id"], 'match': userPos["match_id"] } )
+    return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable})
 
 def tournamentCreatePage(request):
     if request.method == "POST":
@@ -147,7 +152,9 @@ def profilePage(request):
 
 def scorePopup(request):
     if(request.method == "GET"):
-        form = ScoreSubmissionForm()
+        print(request.GET.get('roundId'))
+        print(request.GET.get('matchId'))
+        form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
 def loginUserType(request):
