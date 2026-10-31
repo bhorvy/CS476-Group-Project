@@ -53,4 +53,7 @@
     </div>
     <button onclick="testFunction()">Test Button</button>
     <div id="score-popup"></div>
+
+    <!-- Wrap logic around if the user is an admin they can manage the tournament -->
+    <a href="{% url 'manageTournament' tournament.id %}">Manage Tournament</a>
 {% endblock %}

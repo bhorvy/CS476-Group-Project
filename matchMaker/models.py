@@ -66,6 +66,10 @@ class Tournament(models.Model):
   max_rank = models.CharField(max_length=100)
   start_date = models.DateTimeField(null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
+  participants = models.ManyToManyField(
+        Member,
+        blank=True,
+    )
   def __str__(self):
     return f"{self.name} - ({self.game_title})"
 

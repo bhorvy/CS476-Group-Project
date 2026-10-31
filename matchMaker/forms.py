@@ -1,4 +1,6 @@
 from django import forms
+from .models import Tournament, Member 
+from django.utils import timezone
 
 GENDER = {
     "M": "Male",
@@ -43,4 +45,19 @@ class TournamentCreation(forms.Form):
 class ScoreSubmissionForm(forms.Form):
     player1_score = forms.IntegerField(min_value=0)
     player2_score = forms.IntegerField(min_value=0)
+
+class ManageTournament(forms.Form):
+    participants = forms.ModelMultipleChoiceField(
+        queryset=Member.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+    )
+    tournament_name = forms.CharField(max_length=255)
+    description = forms.CharField(max_length=255)
+    game_title = forms.CharField(max_length=255)
+    format =  forms.ChoiceField(widget=forms.RadioSelect, choices=TournamentFormat)
+    max_participants = forms.IntegerField(max_value=16)
+    min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
+    max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
+    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
     

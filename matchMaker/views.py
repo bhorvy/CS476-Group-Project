@@ -6,8 +6,8 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from .models import Member
 from .models import Tournament
 from datetime import datetime
-from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm
-from .tournament import TournamentInstance, Scoring
+from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament
+from .tournament import TournamentInstance, Scoring, TournamentCreate
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -183,3 +183,45 @@ def registerAdmin(request):
 
     return render(request, 'registerAdmin.html', {'form': form})
 
+def manageTournament(request, tid):
+    tournament = Tournament.objects.get(id=tid)
+    if request.method == "POST":
+            # create a form instance and populate it with data from the request:
+            form = ManageTournament(request.POST)
+            # check whether it's valid:
+            if form.is_valid():
+                data = form.cleaned_data
+
+                tournament.name=data["tournament_name"]
+                tournament.description=data["description"]
+                tournament.game_title = data["game_title"]
+                min_rank = data["min_rank"]
+                max_rank = data["max_rank"]
+                max_participants = data["max_participants"]
+                start_date = data["start_date"]
+
+                participants= data["participants"]
+                if len(participants) == max_participants:
+                    player_ids = list(participants.values_list('id', flat=True))
+                    tournament.layout = TournamentCreate(tournament.name, tournament.description, 
+                                                         player_ids, tournament.game_title).layout
+
+                tournament.save()
+            # redirect to a newly updated tournament URL:
+            return HttpResponseRedirect(f'/tournament/{tournament.id}/')
+
+        # if a GET (or any other method) we'll create a blank form
+    else:
+        form = ManageTournament(initial={
+            "tournament_name": tournament.name,
+            "description": tournament.description,
+            "game_title": tournament.game_title,
+            "format": tournament.format,
+            "max_participants": tournament.max_participants,
+            "min_rank": tournament.min_rank,
+            "max_rank": tournament.max_rank,
+            "start_date": tournament.start_date,
+            "participants": tournament.participants.all(),
+            })
+    # reusing the registation html file as it's just displaying a form. 
+    return render(request, 'register.html', {'form': form})
