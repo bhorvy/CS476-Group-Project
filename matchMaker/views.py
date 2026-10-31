@@ -191,4 +191,4 @@ def manageTournament(request, tid):
             "participants": tournament.participants.all(),
             })
     # reusing the registation html file as it's just displaying a form. 
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'manageTournament.html', {'form': form})
