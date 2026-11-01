@@ -47,6 +47,7 @@ class ScoreSubmissionForm(forms.Form):
     player2_score = forms.IntegerField(min_value=0)
     roundVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
     matchVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
+    matchCompleted = forms.BooleanField(label="Match Completed:", required=False)
 
     def __init__(self, *args, **kwargs):
         self.matchId = kwargs.pop('match_id', None)

@@ -92,11 +92,17 @@ def tournamentPage(request, tid):
     if(request.method == "POST"):
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
+            print(form.cleaned_data)
             obj = Scoring(tid)
+            tournament = TournamentInstance(12)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
             obj.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
                             [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            if form.cleaned_data['matchCompleted']:
+                if not tournament.determineWinner(form.cleaned_data['roundVal'], form.cleaned_data['matchVal']):
+                    #TODO: HTTP error for invalid submission
+                    return
             return redirect(request.path)
     tournament = TournamentInstance(tid)
     if(request.user.is_authenticated):

@@ -60,9 +60,16 @@ class TournamentInstance:
 
     def handleWinner(self, roundId, matchId, winnerId):
         data = self.layout
+        #Check if it is the finals. If so, only handle the winner's id.
+        #TODO: Make a tournament winner field in either the layout or Tournament model,
+        #   and assign it as well when final match is complete.
+        if (roundId + 1) == len(data["bracket"]):
+            data["bracket"][roundId][matchId]["winner_id"] = winnerId
+            self.object.layout = data
+            self.object.save()
+            return
         nextRoundMatchIndex = math.ceil(matchId / 2) - 1
         playerSlotIndex = 0 if matchId % 2 == 1 else 1
-        
         # Update the layout with the winner of the match in the next round's specific player slot
         data["bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
 
@@ -78,6 +85,8 @@ class TournamentInstance:
     def determineWinner(self, roundId, matchId):
             player1Score = self.layout["bracket"][roundId][matchId]["players"][0]["score"]
             player2Score = self.layout["bracket"][roundId][matchId]["players"][1]["score"]
+            print(player1Score)
+            print(player2Score)
             if player1Score > player2Score:
                 self.handleWinner(roundId, matchId, self.layout["bracket"][roundId][matchId]["players"][0]["player_id"])
                 return True
