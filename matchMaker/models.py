@@ -46,21 +46,23 @@ class Team(models.Model):
 #model for tournaments, arguabably MOST IMPORTANT MODEL, so please change if you feel the need
 class Tournament(models.Model):
   class TournmanentFormat(models.TextChoices):
-    SOLO = "SOLO", "1v1 SOLO"
-    TEAM = "TEAM", "Team"
-    OTHER = "OTHER", "Other"
+    SINGLE_ELIM = "SINGLE_ELIM", "Single Elimination"
+    DOUBLE_ELIM = "DOUBLE_ELIM", "Double Elimination"
+    POOLS = "POOLS", "Pools"
   class Status(models.TextChoices):
     UPCOMING = "UPCOMING", "Upcoming"
     ONGOING = "ONGOING", "Ongoing"
     COMPLETED = "COMPLETED", "Completed"
+
   name = models.CharField(max_length=100)
   description = models.TextField(blank=True)
   #layout contains the bracket structure, matchups, and scores for the tournament.
   layout = models.JSONField()
   game_title = models.CharField(max_length=100)
-  format = models.CharField(max_length=10, choices=TournmanentFormat.choices, default=TournmanentFormat.SOLO)
+  format = models.CharField(max_length=20, choices=TournmanentFormat.choices, default=TournmanentFormat.SINGLE_ELIM)
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
   is_public = models.BooleanField(default=True)
+  current_participants = models.IntegerField(default=10)
   max_participants = models.IntegerField(default=16)
   min_rank = models.CharField(max_length=100)
   max_rank = models.CharField(max_length=100)
