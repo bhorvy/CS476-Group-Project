@@ -7,7 +7,8 @@ from .models import Member
 from .models import Tournament
 from datetime import datetime
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament
-from .tournament import TournamentInstance, Scoring, TournamentCreate
+from .tournamentFactory.singleElim import SingleElimination
+from .tournamentFactory.tournamentCreate import TournamentCreate
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -93,18 +94,17 @@ def tournamentPage(request, tid):
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
             print(form.cleaned_data)
-            obj = Scoring(tid)
-            tournament = TournamentInstance(12)
+            tournament = SingleElimination(12)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
-            obj.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
+            tournament.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
                             [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
             if form.cleaned_data['matchCompleted']:
                 if not tournament.determineWinner(form.cleaned_data['roundVal'], form.cleaned_data['matchVal']):
                     #TODO: HTTP error for invalid submission
                     return
             return redirect(request.path)
-    tournament = TournamentInstance(tid)
+    tournament = SingleElimination(tid)
     if(request.user.is_authenticated):
         userPos = tournament.findUserInBracket(request.user.id)
         scoreSubmittable = (userPos != None) and not tournament.IsMatchComplete(userPos["round_id"], userPos["match_id"])
