@@ -7,7 +7,8 @@ from .models import Member
 from .models import Tournament
 from datetime import datetime
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament
-from .tournament import TournamentInstance, Scoring, TournamentCreate
+from .tournamentFactory.singleElim import SingleElimination
+from .tournamentFactory.tournamentCreate import TournamentCreate
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -87,19 +88,29 @@ def gameAccount(request):
     return render(request, 'gameacc.html', {'form': form})
 
 def tournamentPage(request, tid):
+    scoreSubmittable = False
     #This POST request is from the score submission popup.
     if(request.method == "POST"):
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
-            obj = Scoring(tid)
+            print(form.cleaned_data)
+            tournament = SingleElimination(12)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
-            obj.updateScore(0,2, [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            tournament.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
+                            [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            if form.cleaned_data['matchCompleted']:
+                if not tournament.determineWinner(form.cleaned_data['roundVal'], form.cleaned_data['matchVal']):
+                    #TODO: HTTP error for invalid submission
+                    return
             return redirect(request.path)
-    tournament = TournamentInstance(tid)
+    tournament = SingleElimination(tid)
     if(request.user.is_authenticated):
-        print(request.user.username)
-    return render(request, 'tournament.html', {'tournament': tournament})
+        userPos = tournament.findUserInBracket(request.user.id)
+        scoreSubmittable = (userPos != None) and not tournament.IsMatchComplete(userPos["round_id"], userPos["match_id"])
+        return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable,
+                                                       'round': userPos["round_id"], 'match': userPos["match_id"] } )
+    return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable})
 
 def tournamentCreatePage(request):
     if request.method == "POST":
@@ -147,7 +158,9 @@ def profilePage(request):
 
 def scorePopup(request):
     if(request.method == "GET"):
-        form = ScoreSubmissionForm()
+        print(request.GET.get('roundId'))
+        print(request.GET.get('matchId'))
+        form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
 def manageTournament(request, tid):
