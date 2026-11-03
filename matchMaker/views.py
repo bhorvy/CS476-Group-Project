@@ -3,6 +3,7 @@ from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Member
 from .models import Tournament
 from datetime import datetime
@@ -238,3 +239,17 @@ def manageTournament(request, tid):
             })
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'register.html', {'form': form})
+
+def TournamentList(request, id=1):
+    pageNumber = request.GET.get('page') or 1
+    tournamentList = Tournament.objects.all().order_by('id')
+    paginator = Paginator(tournamentList, 10)
+
+    try:
+        page = paginator.get_page(pageNumber)
+    except PageNotAnInteger:
+        page = paginator.get_page(1)
+    except EmptyPage:
+        page = paginator.get_page(paginator.num_pages)
+
+    return render(request, 'tournament_list.html', {'page':page})

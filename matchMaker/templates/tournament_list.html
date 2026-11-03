@@ -1,0 +1,40 @@
+{% extends 'pageSkeleton.html' %}
+{% load static %}
+{% block content %}
+  <link rel="stylesheet" href="{% static 'tournament_list.css' %}" >
+  <div id="tournament-list">
+    <div id="table-container">
+        <table>
+        <thead>
+            <tr>
+                <th>Tournament</th>
+                <th>Status</th>
+                <th>Players</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in page %}
+            <tr>
+                <td><a href="/tournament/{{ entry.id }}/">{{ entry.name }}</a></td>
+                <td>{{ entry.status }}</td>
+                <td>{{ entry.current_participants }}/{{ entry.max_participants }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="pagination">
+            <div class="steps">
+                {% if page.has_previous %}
+                    <a href="?page=1"><<</a>
+                    <a href="?page={{ page.previous_page_number }}"><</a>
+                {% endif %}
+                <span class="current">{{ page.number }}/{{ page.paginator.num_pages }}</span>
+                {% if page.has_next %}
+                    <a href="?page={{ page.next_page_number }}">></a>
+                    <a href="?page={{ page.paginator.num_pages }}">>></a>
+                {% endif %}
+            </div>
+        </div>
+  </div>
+{% endblock %}

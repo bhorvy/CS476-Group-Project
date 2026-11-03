@@ -11,7 +11,6 @@ class TournamentCreate:
     def generateBracket(self, players):
         # 1v1 brackets single elim correlate with length of bits cleanly (i.e. 16 players has 4 rounds),
         # Many of the lines of code are based on this fact.
-
         numPlayers = len(players)
         # Find the next power of 2 greater than or equal to numPlayers.
         # If numPlayers is 17, 15 bye slots will have to be filled as 32 is the next power.
