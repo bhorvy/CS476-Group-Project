@@ -219,4 +219,4 @@ def TournamentList(request, id=1):
     except EmptyPage:
         page = paginator.get_page(paginator.num_pages)
 
-    return render(request, 'tournament_list.html', {'page':page})
+    return render(request, 'tournamentList.html', {'page':page})
