@@ -142,7 +142,7 @@ def tournamentCreatePage(request):
     else:
         form = TournamentCreation()
     # reusing the registation html file as it's just displaying a form. 
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'manageTournament.html', {'form': form})
 
 def homePage(request):
   template = loader.get_template('homepage.html')
@@ -163,39 +163,6 @@ def scorePopup(request):
         print(request.GET.get('matchId'))
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
-
-def loginUserType(request):
-  template = loader.get_template('loginUserType.html')
-  return HttpResponse(template.render())
-
-def registerUserType(request):
-  template = loader.get_template('registerUserType.html')
-  return HttpResponse(template.render())
-
-def registerAdmin(request):
-    # if this is a POST request we need to process the form data
-    if request.method == "POST":
-        # create a form instance and populate it with data from the request:
-        form = LoginForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            User = get_user_model()
-            data = form.cleaned_data
-
-            user = User.objects.create_superuser(
-                username=data["username"],
-                password=data["password"],
-            )
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            return HttpResponseRedirect('http://127.0.0.1:8000/admin/')
-
-    # if a GET (or any other method) we'll create a blank form
-    else:
-        form = LoginForm()
-
-    return render(request, 'registerAdmin.html', {'form': form})
 
 def manageTournament(request, tid):
     tournament = Tournament.objects.get(id=tid)
@@ -238,7 +205,7 @@ def manageTournament(request, tid):
             "participants": tournament.participants.all(),
             })
     # reusing the registation html file as it's just displaying a form. 
-    return render(request, 'register.html', {'form': form})
+    return render(request, 'manageTournament.html', {'form': form})
 
 def TournamentList(request, id=1):
     pageNumber = request.GET.get('page') or 1

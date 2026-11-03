@@ -13,8 +13,5 @@ urlpatterns = [
     path('gameAccount/', views.gameAccount, name='gameAccount'),
     path('create-tournament/', views.tournamentCreatePage, name='createTournament'),
     path('score-popup', views.scorePopup, name='scorePopup'),
-    path('loginUserType/', views.loginUserType, name='loginUserType'),
-    path('registerUserType/', views.registerUserType, name='registerUserType'),
-    path('registerAdmin', views.registerAdmin, name= 'registerAdmin'),
     path('logout/', views.logoutHandler, name='logoutHandler')
 ]
