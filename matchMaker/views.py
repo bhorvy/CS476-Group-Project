@@ -142,7 +142,7 @@ def tournamentCreatePage(request):
     else:
         form = TournamentCreation()
     # reusing the registation html file as it's just displaying a form. 
-    return render(request, 'manageTournament.html', {'form': form})
+    return render(request, 'register.html', {'form': form})
 
 def homePage(request):
   template = loader.get_template('homepage.html')
