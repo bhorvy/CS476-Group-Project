@@ -144,6 +144,7 @@ def registerForTournament(request, tid):
     messages.success(request, "Registration submitted.")
     return HttpResponseRedirect(f"/tournament/{tid}/")
 
+@login_required
 def tournamentCreatePage(request):
     if request.method == "POST":
            # create a form instance and populate it with data from the request:

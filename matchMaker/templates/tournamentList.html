@@ -24,17 +24,23 @@
     </table>
     </div>
     <div class="pagination">
-            <div class="steps">
-                {% if page.has_previous %}
-                    <a href="?page=1"><<</a>
-                    <a href="?page={{ page.previous_page_number }}"><</a>
-                {% endif %}
-                <span class="current">{{ page.number }}/{{ page.paginator.num_pages }}</span>
-                {% if page.has_next %}
-                    <a href="?page={{ page.next_page_number }}">></a>
-                    <a href="?page={{ page.paginator.num_pages }}">>></a>
-                {% endif %}
-            </div>
+        <div class="steps">
+            {% if page.has_previous %}
+                <a href="?page=1"><<</a>
+                <a href="?page={{ page.previous_page_number }}"><</a>
+            {% endif %}
+            <span class="current">{{ page.number }}/{{ page.paginator.num_pages }}</span>
+            {% if page.has_next %}
+                <a href="?page={{ page.next_page_number }}">></a>
+                <a href="?page={{ page.paginator.num_pages }}">>></a>
+            {% endif %}
         </div>
+    </div>
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'createTournament'%}">
+            {% csrf_token %}
+            <button type="submit">Create Tournament</button>
+        </form>
+    {% endif %}
   </div>
 {% endblock %}
