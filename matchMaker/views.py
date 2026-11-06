@@ -1,11 +1,12 @@
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Member
-from .models import Tournament
+from .models import Member, Tournament, TournamentRegistration
 from datetime import datetime
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament
 from .tournamentFactory.singleElim import SingleElimination
@@ -106,12 +107,42 @@ def tournamentPage(request, tid):
                     return
             return redirect(request.path)
     tournament = SingleElimination(tid)
-    if(request.user.is_authenticated):
+    round_id = None
+    match_id = None
+    if request.user.is_authenticated:
         userPos = tournament.findUserInBracket(request.user.id)
-        scoreSubmittable = (userPos != None) and not tournament.IsMatchComplete(userPos["round_id"], userPos["match_id"])
-        return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable,
-                                                       'round': userPos["round_id"], 'match': userPos["match_id"] } )
-    return render(request, 'tournament.html', {'tournament': tournament, 'score_submittable': scoreSubmittable})
+        if userPos is not None:
+            round_id = userPos["round_id"]
+            match_id = userPos["match_id"]
+            scoreSubmittable = not tournament.IsMatchComplete(round_id, match_id)
+    return render(
+        request,
+        "tournament.html",
+        {
+            "tournament": tournament,
+            "score_submittable": scoreSubmittable,
+            "round": round_id,
+            "match": match_id,
+        },
+    )
+
+@login_required
+def registerForTournament(request, tid):
+    tournament = get_object_or_404(Tournament, id=tid)
+    if request.method != "POST":
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+    try:
+        member = request.user.member
+    except Member.DoesNotExist:
+        messages.error(request, "Your account has no member profile, so you cannot register.")
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+    TournamentRegistration.objects.create(
+        tournament=tournament,
+        member=member,
+        status=TournamentRegistration.RegistrationStatus.PENDING,
+    )
+    messages.success(request, "Registration submitted.")
+    return HttpResponseRedirect(f"/tournament/{tid}/")
 
 def tournamentCreatePage(request):
     if request.method == "POST":

@@ -32,20 +32,10 @@ class Team(models.Model):
   def __str__(self):
     return self.name
   
-  class Gender(models.TextChoices):
-        MALE = "M", "Male"
-        FEMALE = "F", "Female"
-        OTHER = "O", "Other"
-  gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
-  DOB = models.DateField()
-  #profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
-
-  def __str__(self):
-    return f"{self.firstname} {self.lastname} ({self.user.username})"
 
 #model for tournaments, arguabably MOST IMPORTANT MODEL, so please change if you feel the need
 class Tournament(models.Model):
-  class TournmanentFormat(models.TextChoices):
+  class TournamentFormat(models.TextChoices):
     SINGLE_ELIM = "SINGLE_ELIM", "Single Elimination"
     DOUBLE_ELIM = "DOUBLE_ELIM", "Double Elimination"
     POOLS = "POOLS", "Pools"
@@ -57,15 +47,15 @@ class Tournament(models.Model):
   name = models.CharField(max_length=100)
   description = models.TextField(blank=True)
   #layout contains the bracket structure, matchups, and scores for the tournament.
-  layout = models.JSONField()
+  layout = models.JSONField(default=dict)
   game_title = models.CharField(max_length=100)
-  format = models.CharField(max_length=20, choices=TournmanentFormat.choices, default=TournmanentFormat.SINGLE_ELIM)
+  format = models.CharField(max_length=20, choices=TournamentFormat.choices, default=TournamentFormat.SINGLE_ELIM)
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
   is_public = models.BooleanField(default=True)
-  current_participants = models.IntegerField(default=10)
+  current_participants = models.IntegerField(default=0)
   max_participants = models.IntegerField(default=16)
-  min_rank = models.CharField(max_length=100)
-  max_rank = models.CharField(max_length=100)
+  min_rank = models.CharField(max_length=100, blank=True)
+  max_rank = models.CharField(max_length=100, blank=True)
   start_date = models.DateTimeField(null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   participants = models.ManyToManyField(
@@ -82,6 +72,15 @@ class TournamentRegistration(models.Model):
     ACCEPTED = "ACCEPTED", "Accepted"
     REJECTED = "REJECTED", "Rejected"
     INVITED = "INVITED", "Invited (Closed Bracket)"
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
+  member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
+  team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
+  status = models.CharField(max_length=20, choices=RegistrationStatus.choices, default=RegistrationStatus.PENDING)
+  rejection_reason = models.CharField(max_length=255, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    participant = self.member.user.username if self.member else self.team.name
+    return f"{participant} -> {self.tournament.name} [{self.status}]"
 
 #model for game accounts, ie the accounts that members have for games
 class GameAccount(models.Model):
@@ -94,18 +93,7 @@ class GameAccount(models.Model):
   def __str__(self):
     return f"{self.member.user.username} - {self.game_title} ({self.game_username})"
 
-  # commenting this out for now, seems to be reimplementing the tournament model above
-
-  # tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='registrations')
-  # member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='tournament_registrations')
-  # team = models.ForeignKey(Team, on_delete=models.CASCADE, null=True, blank=True, related_name='tournament_registrations')
-  # status = models.CharField(max_length=20, choices=TournamentRegistration.RegistrationStatus.choices, default=TournamentRegistration.RegistrationStatus.PENDING)
-  # rejection_reason = models.CharField(max_length=255, blank=True)
-  # created_at = models.DateTimeField(auto_now_add=True)
-  # def __str__(self):
-  #   participant = self.member.user.username if self.member else self.team.name
-  #   return f"{participant} -> {self.tournament.name} [{self.status}]"
-
+ 
 #model for matches
 class Match(models.Model):
   tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='matches')

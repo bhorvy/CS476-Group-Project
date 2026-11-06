@@ -22,6 +22,22 @@
         }
     </script>
     <h1>{{ tournament.name }}</h1>
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+    {% if user.is_authenticated %}
+        <form method="post" action="{% url 'registerTournament' tournament.object.id %}">
+            {% csrf_token %}
+            <button type="submit">Register</button>
+        </form>
+    {% else %}
+        <p><a href="{% url 'loginPage' %}">Log in</a> to register for this tournament.</p>
+    {% endif %}
+    {% if not tournament.getBracket %}
+        <p>No bracket yet. This tournament was created with 0 players.</p>
+    {% endif %}
 
     <div id="tournament-bracket">
         {% for round in tournament.getBracket %}

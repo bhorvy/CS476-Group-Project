@@ -5,13 +5,15 @@ import math
 class SingleElimination(AbstractTournament):
 
     def getBracket(self):
-        return self.layout["bracket"]
+        return self.layout.get("bracket", [])
 
     #findUserInBracket is used to find the first instance of a user in a tournament bracket
     #   starting from the latest point in the bracket. This is used solely to determine which
     #   match a user can edit, given older matches should not be edited. Returns null if no 
     #   instance of that user is found.
     def findUserInBracket(self, uid):
+        if not self.layout.get("bracket"):
+            return None
         #Highest round and decrements
         for i in range(len(self.layout["bracket"]) - 1, -1, -1):
             for j in range(0, len(self.layout["bracket"][i])):
