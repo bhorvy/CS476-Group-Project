@@ -1,0 +1,49 @@
+{% extends 'pageSkeleton.html' %}
+{% block content %}
+  <h1>Teams</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <h2>Create a team</h2>
+    <form method="post" action="{% url 'teamPage' %}">
+      {% csrf_token %}
+      {{ form }}
+      <input type="submit" value="Create team">
+    </form>
+  {% else %}
+    <p><a href="{% url 'loginPage' %}">Log in</a> to create or join a team.</p>
+  {% endif %}
+
+  <h2>All teams</h2>
+  {% if teams %}
+    {% for team in teams %}
+      <div>
+        <h3>{{ team.name }}{% if team.tag %} ({{ team.tag }}){% endif %}</h3>
+        <p>Leader: {{ team.leader.user.username }}</p>
+        <p>Members:
+          {% for teammate in team.members.all %}
+            {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            none
+          {% endfor %}
+        </p>
+        {% if user.is_authenticated %}
+          {% if member and member in team.members.all %}
+            <p>You are on this team.</p>
+          {% else %}
+            <form method="post" action="{% url 'joinTeam' team.id %}">
+              {% csrf_token %}
+              <button type="submit">Join</button>
+            </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No teams yet.</p>
+  {% endif %}
+{% endblock %}

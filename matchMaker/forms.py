@@ -1,5 +1,5 @@
 from django import forms
-from .models import Tournament, Member 
+from .models import Tournament, Member, Team 
 from django.utils import timezone
 
 GENDER = {
@@ -56,6 +56,10 @@ class ScoreSubmissionForm(forms.Form):
         self.fields['roundVal'].initial = self.roundId
         self.fields['matchVal'].initial = self.matchId
 
+
+class CreateTeamForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    tag = forms.CharField(max_length=100, required=False)
 
 class ManageTournament(forms.Form):
     participants = forms.ModelMultipleChoiceField(
