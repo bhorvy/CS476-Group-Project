@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Member, Tournament, TournamentRegistration
 from datetime import datetime
@@ -89,14 +90,24 @@ def gameAccount(request):
 
     return render(request, 'gameacc.html', {'form': form})
 
+def _sync_tournament_roster(tournament):
+    registered_members = Member.objects.filter(
+        tournament_registrations__tournament=tournament
+    ).distinct()
+    tournament.participants.set(registered_members)
+    tournament.current_participants = registered_members.count()
+    tournament.save(update_fields=["current_participants"])
+    return registered_members
+
+@never_cache
 def tournamentPage(request, tid):
     scoreSubmittable = False
     #This POST request is from the score submission popup.
-    if(request.method == "POST"):
+    if request.method == "POST" and "player1_score" in request.POST:
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
             print(form.cleaned_data)
-            tournament = SingleElimination(12)
+            tournament = SingleElimination(tid)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
             tournament.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
@@ -109,12 +120,15 @@ def tournamentPage(request, tid):
     tournament = SingleElimination(tid)
     round_id = None
     match_id = None
+    already_registered = False
+    participants = _sync_tournament_roster(tournament.object).select_related("user")
     if request.user.is_authenticated:
         userPos = tournament.findUserInBracket(request.user.id)
         if userPos is not None:
             round_id = userPos["round_id"]
             match_id = userPos["match_id"]
             scoreSubmittable = not tournament.IsMatchComplete(round_id, match_id)
+        already_registered = participants.filter(user=request.user).exists()
     return render(
         request,
         "tournament.html",
@@ -123,6 +137,8 @@ def tournamentPage(request, tid):
             "score_submittable": scoreSubmittable,
             "round": round_id,
             "match": match_id,
+            "participants": participants,
+            "already_registered": already_registered,
         },
     )
 
@@ -136,12 +152,26 @@ def registerForTournament(request, tid):
     except Member.DoesNotExist:
         messages.error(request, "Your account has no member profile, so you cannot register.")
         return HttpResponseRedirect(f"/tournament/{tid}/")
+
+    already_registered = TournamentRegistration.objects.filter(
+        tournament=tournament, member=member
+    ).exists()
+    if not already_registered and tournament.participants.count() >= tournament.max_participants:
+        messages.error(request, "This tournament is full.")
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+
+    if already_registered:
+        _sync_tournament_roster(tournament)
+        messages.success(request, "You are already registered for this tournament.")
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+
     TournamentRegistration.objects.create(
         tournament=tournament,
         member=member,
         status=TournamentRegistration.RegistrationStatus.PENDING,
     )
-    messages.success(request, "Registration submitted.")
+    _sync_tournament_roster(tournament)
+    messages.success(request, "You joined this tournament.")
     return HttpResponseRedirect(f"/tournament/{tid}/")
 
 @login_required
@@ -239,6 +269,7 @@ def manageTournament(request, tid):
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 
+@never_cache
 def TournamentList(request, id=1):
     pageNumber = request.GET.get('page') or 1
     tournamentList = Tournament.objects.all().order_by('id')
