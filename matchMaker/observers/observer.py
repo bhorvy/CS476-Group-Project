@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class Observer(ABC):
     @abstractmethod
-    def update(self):
+    def update(self, tournament, message):
         pass
 
 class Subject(ABC):
@@ -15,5 +15,5 @@ class Subject(ABC):
         pass
 
     @abstractmethod
-    def notify(self):
+    def notify(self, tournament, message):
         pass

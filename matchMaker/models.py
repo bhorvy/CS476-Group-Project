@@ -114,3 +114,19 @@ class Match(models.Model):
     c1 = self.player1.user.username if self.player1 else (self.team1.name if self.team1 else "TBD")
     c2 = self.player2.user.username if self.player2 else (self.team2.name if self.team2 else "TBD")
     return f"{self.tournament.name} (R{self.round_number} M{self.match_number}) : {c1} vs {c2}"
+
+#model for tournament notifications
+class TournamentNotification(models.Model):
+  member = models.ForeignKey(
+    Member,
+    on_delete=models.CASCADE, 
+    related_name="tournament_notifications"
+  )
+  tournament = models.ForeignKey(
+    Tournament,
+    on_delete=models.CASCADE,
+    related_name="notifications",
+  )
+  message = models.CharField(max_length=255)
+  created_at = models.DateTimeField(auto_now_add=True)
+  is_read = models.BooleanField(default=False)

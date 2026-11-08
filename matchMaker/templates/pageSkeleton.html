@@ -18,3 +18,22 @@
 </body>
 
 </html>
+
+{% if user.is_authenticated %}
+<script> 
+async function checkTournamentNotifications() {
+    const response = await fetch("{% url 'tournamentNotifications' %}");
+    const data = await response.json();
+    
+    for (const notification of data.notifications) {
+        // can change it to not be an alert, easy implementation for now
+            alert(notification.message);
+        }
+    }
+
+checkTournamentNotifications();
+//check every 5 seconds for notifications
+setInterval(checkTournamentNotifications, 5000);
+
+</script>
+{% endif %}

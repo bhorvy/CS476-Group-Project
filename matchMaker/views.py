@@ -12,6 +12,8 @@ from datetime import datetime
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm
 from .tournamentFactory.singleElim import SingleElimination
 from .tournamentFactory.tournamentCreate import TournamentCreate
+from .observers.bracketUpdateSubject import notify_tournament_updated
+from .models import TournamentNotification
 
 def matchMaker(request):
   template = loader.get_template('demo.html')
@@ -101,29 +103,61 @@ def _sync_tournament_roster(tournament):
 
 @never_cache
 def tournamentPage(request, tid):
+    tournament = SingleElimination(tid)
     scoreSubmittable = False
     #This POST request is from the score submission popup.
     if request.method == "POST" and "player1_score" in request.POST:
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
             print(form.cleaned_data)
-            tournament = SingleElimination(tid)
             #TODO: Modify updateScore parameters to submit proper round and match ids 
             #   based on user accessing webpage (i.e. cookies for user).
-            tournament.updateScore(form.cleaned_data['roundVal'], form.cleaned_data['matchVal'], 
-                            [form.cleaned_data['player1_score'], form.cleaned_data['player2_score']])
+            round_id = form.cleaned_data["roundVal"]
+            match_id = form.cleaned_data["matchVal"]
+
+            match = tournament.layout["bracket"][round_id][match_id]
+            player_ids = [
+                player["player_id"]
+                for player in match ["players"]
+                if player["player_id"] != 0
+            ]
+
+            members = Member.objects.filter(id__in=player_ids)
+
+            tournament.updateScore(
+                round_id,
+                match_id,
+                [
+                    form.cleaned_data['player1_score'], 
+                    form.cleaned_data['player2_score']
+                ]
+            )
+
+            notify_tournament_updated(
+            tournament.object,
+            members,
+            "Your match score was updated.",
+            )
             if form.cleaned_data['matchCompleted']:
                 if not tournament.determineWinner(form.cleaned_data['roundVal'], form.cleaned_data['matchVal']):
                     #TODO: HTTP error for invalid submission
                     return
+
+            winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
+            winner = Member.objects.filter(pk=winner_id)
+
+            notify_tournament_updated(
+            tournament.object,
+            winner,
+            "You advance, please refer to the bracket for your next match.",
+            )       
+
             return redirect(request.path)
-    tournament = SingleElimination(tid)
-    round_id = None
-    match_id = None
+
     already_registered = False
     participants = _sync_tournament_roster(tournament.object).select_related("user")
     if request.user.is_authenticated:
-        userPos = tournament.findUserInBracket(request.user.id)
+        userPos = tournament.findUserInBracket(request.user.member.id)
         if userPos is not None:
             round_id = userPos["round_id"]
             match_id = userPos["match_id"]
@@ -193,6 +227,7 @@ def tournamentCreatePage(request):
                    is_public = True,
                    min_rank = data["min_rank"],
                    max_rank = data["max_rank"],
+                   current_participants = data["current_participants"],
                    max_participants = data["max_participants"],
                    start_date = data["start_date"],
                    created_at = datetime.now(),
@@ -250,6 +285,8 @@ def manageTournament(request, tid):
                                                          player_ids, tournament.game_title).layout
 
                 tournament.save()
+
+                notify_tournament_updated(tournament, tournament.participants.all(), "The tournament bracket was updated.")
             # redirect to a newly updated tournament URL:
             return HttpResponseRedirect(f'/tournament/{tournament.id}/')
 
@@ -340,3 +377,85 @@ def joinTeam(request, team_id):
     team.members.add(member)
     messages.success(request, f"You joined {team.name}.")
     return HttpResponseRedirect("/team/")
+
+def _member_or_none(user):
+    if not user.is_authenticated:
+        return None
+    try:
+        return user.member
+    except Member.DoesNotExist:
+        return None
+
+@never_cache
+def teamPage(request):
+    member = _member_or_none(request.user)
+    form = CreateTeamForm()
+    if request.method == "POST":
+        if not member:
+            messages.error(request, "Log in with a signup account to create a team.")
+            return HttpResponseRedirect("/team/")
+        form = CreateTeamForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["name"]
+            if Team.objects.filter(name__iexact=name).exists():
+                messages.error(request, "A team with that name already exists.")
+            else:
+                team = Team.objects.create(
+                    name=name,
+                    tag=form.cleaned_data["tag"],
+                    leader=member,
+                )
+                team.members.add(member)
+                messages.success(request, f"Team {team.name} created.")
+                return HttpResponseRedirect("/team/")
+    teams = Team.objects.select_related("leader__user").prefetch_related("members__user").order_by("name")
+    return render(
+        request,
+        "teams.html",
+        {
+            "form": form,
+            "teams": teams,
+            "member": member,
+        },
+    )
+
+@login_required
+def joinTeam(request, team_id):
+    team = get_object_or_404(Team, id=team_id)
+    if request.method != "POST":
+        return HttpResponseRedirect("/team/")
+    member = _member_or_none(request.user)
+    if not member:
+        messages.error(request, "Your account has no member profile, so you cannot join a team.")
+        return HttpResponseRedirect("/team/")
+    if team.members.filter(pk=member.pk).exists():
+        messages.success(request, f"You are already on {team.name}.")
+        return HttpResponseRedirect("/team/")
+    team.members.add(member)
+    messages.success(request, f"You joined {team.name}.")
+    return HttpResponseRedirect("/team/")
+
+
+@login_required
+def tournamentNotifications(request):
+    notifications = list(
+        TournamentNotification.objects.filter(
+        member = request.user.member,
+        is_read=False,
+    ))
+
+    
+    for notification in notifications:
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+    
+    return JsonResponse({
+        "notifications": [
+            {
+                "id": notification.id,
+                "message": notification.message,
+                "tournament_id": notification.tournament_id
+            }
+            for notification in notifications
+        ]
+    })

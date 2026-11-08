@@ -16,5 +16,6 @@ urlpatterns = [
     path('gameAccount/', views.gameAccount, name='gameAccount'),
     path('create-tournament/', views.tournamentCreatePage, name='createTournament'),
     path('score-popup', views.scorePopup, name='scorePopup'),
-    path('logout/', views.logoutHandler, name='logoutHandler')
+    path('logout/', views.logoutHandler, name='logoutHandler'),
+    path("notifications/", views.tournamentNotifications, name="tournamentNotifications"),
 ]
