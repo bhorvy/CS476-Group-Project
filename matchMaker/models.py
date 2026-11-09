@@ -43,6 +43,9 @@ class Tournament(models.Model):
     UPCOMING = "UPCOMING", "Upcoming"
     ONGOING = "ONGOING", "Ongoing"
     COMPLETED = "COMPLETED", "Completed"
+  class EntryType(models.TextChoices):
+    SOLO = "SOLO", "Solo"
+    TEAM = "TEAM", "Team"
 
   name = models.CharField(max_length=100)
   description = models.TextField(blank=True)
@@ -50,6 +53,7 @@ class Tournament(models.Model):
   layout = models.JSONField(default=dict)
   game_title = models.CharField(max_length=100)
   format = models.CharField(max_length=20, choices=TournamentFormat.choices, default=TournamentFormat.SINGLE_ELIM)
+  entry_type = models.CharField(max_length=10, choices=EntryType.choices, default=EntryType.SOLO)
   status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
   is_public = models.BooleanField(default=True)
   current_participants = models.IntegerField(default=0)

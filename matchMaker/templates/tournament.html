@@ -27,11 +27,24 @@
             <p>{{ message }}</p>
         {% endfor %}
     {% endif %}
-    <p>{{ tournament.object.current_participants }}/{{ tournament.object.max_participants }} players</p>
-    {% if participants %}
+    <p>
+        {{ tournament.object.get_entry_type_display }} tournament —
+        {{ tournament.object.current_participants }}/{{ tournament.object.max_participants }} registered
+    </p>
+    {% if registrations %}
         <ul>
-            {% for member in participants %}
-                <li>{{ member.user.username }}</li>
+            {% for entry in registrations %}
+                {% if entry.team %}
+                    <li>
+                        Team {{ entry.team.name }}
+                        (registered by {{ entry.member.user.username }}):
+                        {% for teammate in entry.team.members.all %}
+                            {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </li>
+                {% else %}
+                    <li>{{ entry.member.user.username }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
     {% else %}
@@ -43,7 +56,21 @@
         {% else %}
             <form method="post" action="{% url 'registerTournament' tournament.object.id %}">
                 {% csrf_token %}
-                <button type="submit">Register</button>
+                {% if tournament.object.entry_type == "TEAM" %}
+                    {% if user_teams %}
+                        <label for="team_id">Register team</label>
+                        <select name="team_id" id="team_id" required>
+                            {% for team in user_teams %}
+                                <option value="{{ team.id }}">{{ team.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Register team</button>
+                    {% else %}
+                        <p>Only a team leader can register. Create a team on the Teams page, or ask your leader to register.</p>
+                    {% endif %}
+                {% else %}
+                    <button type="submit">Register</button>
+                {% endif %}
             </form>
         {% endif %}
     {% else %}

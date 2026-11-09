@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
+from django.db import IntegrityError, transaction
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
@@ -28,23 +29,24 @@ def signUpPage(request):
         if form.is_valid():
             User = get_user_model()
             data = form.cleaned_data
-
-            user = User.objects.create_user(
-                username=data["username"],
-                password=data["password"],
-            )
-
-            Member.objects.create(
-                user=user,
-                firstname=data["first_name"],
-                lastname=data["last_name"],
-                gender=data["gender"],
-                DOB=data["date_of_birth"],
-            )
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            return HttpResponseRedirect('/loginPage/')
+            try:
+                with transaction.atomic():
+                    user = User.objects.create_user(
+                        username=data["username"],
+                        password=data["password"],
+                    )
+                    Member.objects.create(
+                        user=user,
+                        firstname=data["first_name"],
+                        lastname=data["last_name"],
+                        gender=data["gender"],
+                        DOB=data["date_of_birth"],
+                    )
+            except IntegrityError:
+                form.add_error("username", "That username is already taken.")
+            else:
+                messages.success(request, "Account created. Log in to continue.")
+                return HttpResponseRedirect('/loginPage/')
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -93,13 +95,15 @@ def gameAccount(request):
     return render(request, 'gameacc.html', {'form': form})
 
 def _sync_tournament_roster(tournament):
-    registered_members = Member.objects.filter(
-        tournament_registrations__tournament=tournament
-    ).distinct()
-    tournament.participants.set(registered_members)
-    tournament.current_participants = registered_members.count()
+    registrations = TournamentRegistration.objects.filter(tournament=tournament)
+    member_ids = list(registrations.values_list("member_id", flat=True))
+    team_member_ids = list(
+        Member.objects.filter(teams__tournament_registrations__tournament=tournament).values_list("id", flat=True)
+    )
+    tournament.participants.set(set(member_ids) | set(team_member_ids))
+    tournament.current_participants = registrations.count()
     tournament.save(update_fields=["current_participants"])
-    return registered_members
+    return registrations.select_related("member__user", "team").prefetch_related("team__members__user")
 
 @never_cache
 def tournamentPage(request, tid):
@@ -154,15 +158,23 @@ def tournamentPage(request, tid):
 
             return redirect(request.path)
 
+    round_id = None
+    match_id = None
     already_registered = False
-    participants = _sync_tournament_roster(tournament.object).select_related("user")
-    if request.user.is_authenticated:
-        userPos = tournament.findUserInBracket(request.user.member.id)
+    user_teams = Team.objects.none()
+    member = _member_or_none(request.user)
+    registrations = _sync_tournament_roster(tournament.object)
+    if member:
+        userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
             round_id = userPos["round_id"]
             match_id = userPos["match_id"]
             scoreSubmittable = not tournament.IsMatchComplete(round_id, match_id)
-        already_registered = participants.filter(user=request.user).exists()
+        already_registered = (
+            registrations.filter(member=member).exists()
+            or registrations.filter(team__members=member).exists()
+        )
+        user_teams = member.led_teams.all()
     return render(
         request,
         "tournament.html",
@@ -171,8 +183,9 @@ def tournamentPage(request, tid):
             "score_submittable": scoreSubmittable,
             "round": round_id,
             "match": match_id,
-            "participants": participants,
+            "registrations": registrations,
             "already_registered": already_registered,
+            "user_teams": user_teams,
         },
     )
 
@@ -190,22 +203,51 @@ def registerForTournament(request, tid):
     already_registered = TournamentRegistration.objects.filter(
         tournament=tournament, member=member
     ).exists()
-    if not already_registered and tournament.participants.count() >= tournament.max_participants:
-        messages.error(request, "This tournament is full.")
-        return HttpResponseRedirect(f"/tournament/{tid}/")
-
     if already_registered:
         _sync_tournament_roster(tournament)
         messages.success(request, "You are already registered for this tournament.")
         return HttpResponseRedirect(f"/tournament/{tid}/")
 
+    team = None
+    team_id = request.POST.get("team_id")
+    if tournament.entry_type == Tournament.EntryType.TEAM:
+        if not team_id:
+            messages.error(request, "This is a team tournament. Choose a team to register.")
+            return HttpResponseRedirect(f"/tournament/{tid}/")
+    elif team_id:
+        messages.error(request, "This is a solo tournament. Register as yourself.")
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+
+    if team_id:
+        team = get_object_or_404(Team, id=team_id)
+        if team.leader_id != member.id:
+            messages.error(request, "Only the team leader can register this team.")
+            return HttpResponseRedirect(f"/tournament/{tid}/")
+        if team.members.count() < 1:
+            messages.error(request, "That team has no members.")
+            return HttpResponseRedirect(f"/tournament/{tid}/")
+        if TournamentRegistration.objects.filter(tournament=tournament, team=team).exists():
+            messages.error(request, f"{team.name} is already registered for this tournament.")
+            return HttpResponseRedirect(f"/tournament/{tid}/")
+        if TournamentRegistration.objects.filter(tournament=tournament, member__in=team.members.all()).exists():
+            messages.error(request, "A member of this team is already registered.")
+            return HttpResponseRedirect(f"/tournament/{tid}/")
+
+    if TournamentRegistration.objects.filter(tournament=tournament).count() >= tournament.max_participants:
+        messages.error(request, "This tournament is full.")
+        return HttpResponseRedirect(f"/tournament/{tid}/")
+
     TournamentRegistration.objects.create(
         tournament=tournament,
         member=member,
+        team=team,
         status=TournamentRegistration.RegistrationStatus.PENDING,
     )
     _sync_tournament_roster(tournament)
-    messages.success(request, "You joined this tournament.")
+    if team:
+        messages.success(request, f"{team.name} joined this tournament.")
+    else:
+        messages.success(request, "You joined this tournament.")
     return HttpResponseRedirect(f"/tournament/{tid}/")
 
 @login_required
@@ -225,9 +267,10 @@ def tournamentCreatePage(request):
                    layout = {"bracket": []},
                    status = "UPCOMING",
                    is_public = True,
+                   entry_type = data["entry_type"],
                    min_rank = data["min_rank"],
                    max_rank = data["max_rank"],
-                   current_participants = data["current_participants"],
+                   current_participants = 0,
                    max_participants = data["max_participants"],
                    start_date = data["start_date"],
                    created_at = datetime.now(),
@@ -250,9 +293,10 @@ def logoutHandler(request):
         logout(request)
     return HttpResponseRedirect('/homePage/')
 
+@login_required
 def profilePage(request):
-    template = loader.get_template('profile.html')
-    return HttpResponse(template.render())
+    member = _member_or_none(request.user)
+    return render(request, "profile.html", {"member": member})
 
 def scorePopup(request):
     if(request.method == "GET"):
@@ -273,6 +317,7 @@ def manageTournament(request, tid):
                 tournament.name=data["tournament_name"]
                 tournament.description=data["description"]
                 tournament.game_title = data["game_title"]
+                tournament.entry_type = data["entry_type"]
                 min_rank = data["min_rank"]
                 max_rank = data["max_rank"]
                 max_participants = data["max_participants"]
@@ -296,7 +341,7 @@ def manageTournament(request, tid):
             "tournament_name": tournament.name,
             "description": tournament.description,
             "game_title": tournament.game_title,
-            "format": tournament.format,
+            "entry_type": tournament.entry_type,
             "max_participants": tournament.max_participants,
             "min_rank": tournament.min_rank,
             "max_rank": tournament.max_rank,

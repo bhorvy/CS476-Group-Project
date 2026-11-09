@@ -11,7 +11,25 @@
   {% endif %}
 
   <p>Username: {{ user.username }}</p>
-  <p>Full Name: {{ user.firstname }} + {{ user.lastname }}</p>
-  <p>Gender: {{ user.gender }}</p>
-  <p>Date of Birth: {{ user.DOB }}</p>
+  {% if member %}
+    <p>Full Name: {{ member.firstname }} {{ member.lastname }}</p>
+    <p>Gender: {{ member.get_gender_display }}</p>
+    <p>Date of Birth: {{ member.DOB }}</p>
+    <p>Teams you lead:
+      {% for team in member.led_teams.all %}
+        {{ team.name }}{% if not forloop.last %}, {% endif %}
+      {% empty %}
+        none
+      {% endfor %}
+    </p>
+    <p>Teams you are on:
+      {% for team in member.teams.all %}
+        {{ team.name }}{% if not forloop.last %}, {% endif %}
+      {% empty %}
+        none
+      {% endfor %}
+    </p>
+  {% else %}
+    <p>No member profile is attached to this account.</p>
+  {% endif %}
 {% endblock %}
