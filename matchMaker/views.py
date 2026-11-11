@@ -287,7 +287,7 @@ def tournamentCreatePage(request):
 
 def homePage(request):
   template = loader.get_template('homepage.html')
-  return HttpResponse(template.render())
+  return render(request, "homepage.html", {})
 
 def logoutHandler(request):
     if(request.user.is_authenticated):
