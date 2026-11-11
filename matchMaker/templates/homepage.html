@@ -1,7 +1,7 @@
 {% extends 'pageSkeleton.html' %}
 
 {% block content %}
-  <p><a id="uname" href="{% url 'profilePage' %}">Username</a>
+  <p><a id="uname" href="{% url 'profilePage' %}">{{ user.username }}</a>
     <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
   </p>
 
