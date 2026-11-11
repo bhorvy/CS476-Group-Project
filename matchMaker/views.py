@@ -330,7 +330,7 @@ def manageTournament(request, tid):
                 tournament.start_date = data["start_date"]
 
                 participants= data["participants"]
-                if len(participants) == max_participants:
+                if len(participants) == tournament.max_participants:
                     player_ids = list(participants.values_list('id', flat=True))
                     tournament.layout = TournamentCreate(tournament.name, tournament.description, 
                                                          player_ids, tournament.game_title).layout
