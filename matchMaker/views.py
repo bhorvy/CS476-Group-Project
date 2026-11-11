@@ -6,6 +6,7 @@ from django.db import IntegrityError, transaction
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Member, Tournament, TournamentRegistration, Team
@@ -265,7 +266,7 @@ def tournamentCreatePage(request):
                    game_title = data["game_title"],
                    #generating an empty json bracket for now. Once registrations happen, then generate bracket  
                    layout = {"bracket": []},
-                   status = "UPCOMING",
+                   status = tournament.status.UPCOMING,
                    is_public = True,
                    entry_type = data["entry_type"],
                    min_rank = data["min_rank"],
@@ -305,8 +306,13 @@ def scorePopup(request):
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
+@login_required
 def manageTournament(request, tid):
-    tournament = Tournament.objects.get(id=tid)
+    # implementing the is_staff for now, so only admins can change it
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    tournament = get_object_or_404(Tournament, id=tid)
     if request.method == "POST":
             # create a form instance and populate it with data from the request:
             form = ManageTournament(request.POST)
@@ -318,10 +324,10 @@ def manageTournament(request, tid):
                 tournament.description=data["description"]
                 tournament.game_title = data["game_title"]
                 tournament.entry_type = data["entry_type"]
-                min_rank = data["min_rank"]
-                max_rank = data["max_rank"]
-                max_participants = data["max_participants"]
-                start_date = data["start_date"]
+                tournament.min_rank = data["min_rank"]
+                tournament.max_rank = data["max_rank"]
+                tournament.max_participants = data["max_participants"]
+                tournament.start_date = data["start_date"]
 
                 participants= data["participants"]
                 if len(participants) == max_participants:
