@@ -35,6 +35,12 @@ class LoginForm(forms.Form):
     username = forms.CharField(max_length=255)
     password = forms.CharField(widget=forms.PasswordInput, max_length=255)
 
+class MemberProfileForm(forms.Form):
+    firstname = forms.CharField(max_length=255, label="First name")
+    lastname = forms.CharField(max_length=255, label="Last name")
+    gender = forms.ChoiceField(choices=GENDER)
+    DOB = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
+
 class GameLinkForm(forms.Form):
     game_title = forms.CharField(max_length=100)
     game_username = forms.CharField(max_length=100)

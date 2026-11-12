@@ -13,6 +13,7 @@ urlpatterns = [
     path('manage-tournament/<int:tid>/', views.manageTournament, name='manageTournament'),
     path('homePage/', views.homePage, name='homePage'),
     path('profilePage/', views.profilePage, name='profilePage'),
+    path('profilePage/edit/', views.editProfile, name='editProfile'),
     path('gameAccount/', views.gameAccount, name='gameAccount'),
     path('create-tournament/', views.tournamentCreatePage, name='createTournament'),
     path('score-popup', views.scorePopup, name='scorePopup'),

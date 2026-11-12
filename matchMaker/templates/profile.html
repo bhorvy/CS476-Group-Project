@@ -29,6 +29,7 @@
         none
       {% endfor %}
     </p>
+     <button><a href="{% url 'editProfile' %}">Edit profile</a></button>
   {% else %}
     <p>No member profile is attached to this account.</p>
   {% endif %}

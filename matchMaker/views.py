@@ -11,7 +11,7 @@ from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Member, Tournament, TournamentRegistration, Team
 from datetime import datetime
-from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm
+from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm
 from .tournamentFactory.singleElim import SingleElimination
 from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
@@ -266,7 +266,7 @@ def tournamentCreatePage(request):
                    game_title = data["game_title"],
                    #generating an empty json bracket for now. Once registrations happen, then generate bracket  
                    layout = {"bracket": []},
-                   status = tournament.status.UPCOMING,
+                   status = Tournament.Status.UPCOMING,
                    is_public = True,
                    entry_type = data["entry_type"],
                    min_rank = data["min_rank"],
@@ -298,6 +298,35 @@ def logoutHandler(request):
 def profilePage(request):
     member = _member_or_none(request.user)
     return render(request, "profile.html", {"member": member})
+
+@login_required
+def editProfile(request):
+    member = _member_or_none(request.user)
+    if not member:
+        messages.error(request, "Your account has no member profile, so you cannot edit your profile.")
+        return HttpResponseRedirect("/profilePage/")
+
+    if request.method == "POST":
+        form = MemberProfileForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            member.firstname = data["firstname"]
+            member.lastname = data["lastname"]
+            member.gender = data["gender"]
+            member.DOB = data["DOB"]
+            member.save()
+            return redirect("profilePage")
+    else:
+        form = MemberProfileForm(
+            initial={
+                "firstname": member.firstname,
+                "lastname": member.lastname,
+                "gender": member.gender,
+                "DOB": member.DOB,
+            },
+        )
+
+    return render(request, "profileEdit.html", {"form": form})
 
 def scorePopup(request):
     if(request.method == "GET"):
@@ -428,14 +457,6 @@ def joinTeam(request, team_id):
     team.members.add(member)
     messages.success(request, f"You joined {team.name}.")
     return HttpResponseRedirect("/team/")
-
-def _member_or_none(user):
-    if not user.is_authenticated:
-        return None
-    try:
-        return user.member
-    except Member.DoesNotExist:
-        return None
 
 @never_cache
 def teamPage(request):
