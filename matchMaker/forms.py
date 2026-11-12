@@ -1,3 +1,10 @@
+#
+#
+#
+# List of form fields: https://docs.djangoproject.com/en/6.1/ref/forms/fields/#django.forms.CharField
+# List of widgets: https://docs.djangoproject.com/en/6.1/ref/forms/widgets/
+# Reference for how choices in the ChoiceField work: https://docs.djangoproject.com/en/6.1/ref/models/fields/#field-choices.
+
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Tournament, Member, Team 

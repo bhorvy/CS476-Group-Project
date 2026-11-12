@@ -1,3 +1,5 @@
+# Algorithm for posting each form is found here: https://docs.djangoproject.com/en/6.1/topics/forms/
+
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
