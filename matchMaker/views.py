@@ -1,5 +1,11 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: views.py
+# Purpose: Code for views
+
 # Algorithm for posting each form is found here: https://docs.djangoproject.com/en/6.1/topics/forms/
 
+# List of important modules
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.http import HttpResponseRedirect
@@ -19,10 +25,12 @@ from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
 from .models import TournamentNotification
 
+# render demo page
 def matchMaker(request):
   template = loader.get_template('demo.html')
   return HttpResponse(template.render())
 
+# render signup page
 def signUpPage(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
@@ -53,6 +61,7 @@ def signUpPage(request):
 
     return render(request, 'register.html', {'form': form})
 
+# render login page
 def loginPage(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -71,6 +80,7 @@ def loginPage(request):
 
     return render(request, 'login.html', {'form': form})
 
+# render game account page
 def gameAccount(request):
     if request.method == "POST":
         form = GameLinkForm(request.POST)
@@ -82,6 +92,7 @@ def gameAccount(request):
 
     return render(request, 'gameacc.html', {'form': form})
 
+# render tournament roster
 def _sync_tournament_roster(tournament):
     registrations = TournamentRegistration.objects.filter(tournament=tournament)
     member_ids = list(registrations.values_list("member_id", flat=True))
@@ -93,6 +104,7 @@ def _sync_tournament_roster(tournament):
     tournament.save(update_fields=["current_participants"])
     return registrations.select_related("member__user", "team").prefetch_related("team__members__user")
 
+# render tournament page
 @never_cache
 def tournamentPage(request, tid):
     tournament = SingleElimination(tid)
@@ -177,6 +189,7 @@ def tournamentPage(request, tid):
         },
     )
 
+# render tournament reigsteration
 @login_required
 def registerForTournament(request, tid):
     tournament = get_object_or_404(Tournament, id=tid)
@@ -238,6 +251,7 @@ def registerForTournament(request, tid):
         messages.success(request, "You joined this tournament.")
     return HttpResponseRedirect(f"/tournament/{tid}/")
 
+# render tournament creation
 @login_required
 def tournamentCreatePage(request):
     if request.method == "POST":
@@ -272,20 +286,24 @@ def tournamentCreatePage(request):
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 
+# render home page
 def homePage(request):
   template = loader.get_template('homepage.html')
   return render(request, "homepage.html", {})
 
+# enable log out
 def logoutHandler(request):
     if(request.user.is_authenticated):
         logout(request)
     return HttpResponseRedirect('/homePage/')
 
+# render profile page
 @login_required
 def profilePage(request):
     member = _member_or_none(request.user)
     return render(request, "profile.html", {"member": member})
 
+# enable profile edit
 @login_required
 def editProfile(request):
     member = _member_or_none(request.user)
@@ -315,6 +333,7 @@ def editProfile(request):
 
     return render(request, "profileEdit.html", {"form": form})
 
+# render score
 def scorePopup(request):
     if(request.method == "GET"):
         print(request.GET.get('roundId'))
@@ -322,6 +341,7 @@ def scorePopup(request):
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
+# render tournament management
 @login_required
 def manageTournament(request, tid):
     # implementing the is_staff for now, so only admins can change it
@@ -373,6 +393,7 @@ def manageTournament(request, tid):
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 
+# render tournament list
 @never_cache
 def TournamentList(request, id=1):
     pageNumber = request.GET.get('page') or 1
@@ -396,6 +417,7 @@ def _member_or_none(user):
     except Member.DoesNotExist:
         return None
 
+# render team page
 @never_cache
 def teamPage(request):
     member = _member_or_none(request.user)
@@ -429,6 +451,7 @@ def teamPage(request):
         },
     )
 
+# enable joining teams
 @login_required
 def joinTeam(request, team_id):
     team = get_object_or_404(Team, id=team_id)
@@ -445,6 +468,7 @@ def joinTeam(request, team_id):
     messages.success(request, f"You joined {team.name}.")
     return HttpResponseRedirect("/team/")
 
+# render enable team page
 @never_cache
 def teamPage(request):
     member = _member_or_none(request.user)
@@ -478,6 +502,7 @@ def teamPage(request):
         },
     )
 
+# enable join team
 @login_required
 def joinTeam(request, team_id):
     team = get_object_or_404(Team, id=team_id)
@@ -494,7 +519,7 @@ def joinTeam(request, team_id):
     messages.success(request, f"You joined {team.name}.")
     return HttpResponseRedirect("/team/")
 
-
+# render send notifications
 @login_required
 def tournamentNotifications(request):
     notifications = list(
