@@ -1,0 +1,19 @@
+{% extends 'pageSkeleton.html' %}
+
+{% block content %}
+  <h1>Edit Profile</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" action="{% url 'editProfile' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save changes</button>
+  </form>
+
+  <p><a href="{% url 'profilePage' %}">Cancel</a></p>
+{% endblock %}

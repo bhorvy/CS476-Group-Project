@@ -1,5 +1,13 @@
+#
+#
+#
+# List of form fields: https://docs.djangoproject.com/en/6.1/ref/forms/fields/#django.forms.CharField
+# List of widgets: https://docs.djangoproject.com/en/6.1/ref/forms/widgets/
+# Reference for how choices in the ChoiceField work: https://docs.djangoproject.com/en/6.1/ref/models/fields/#field-choices.
+
 from django import forms
-from .models import Tournament, Member 
+from django.contrib.auth import get_user_model
+from .models import Tournament, Member, Team 
 from django.utils import timezone
 
 GENDER = {
@@ -17,26 +25,44 @@ class RegisterForm(forms.Form):
     date_of_birth = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
     img = forms.FileField(widget=forms.ClearableFileInput(attrs={"type": "file"}), required=False)
 
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        User = get_user_model()
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError("That username is already taken.")
+        return username
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters.")
+        return password
+
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=255)
     password = forms.CharField(widget=forms.PasswordInput, max_length=255)
+
+class MemberProfileForm(forms.Form):
+    firstname = forms.CharField(max_length=255, label="First name")
+    lastname = forms.CharField(max_length=255, label="Last name")
+    gender = forms.ChoiceField(choices=GENDER)
+    DOB = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
 
 class GameLinkForm(forms.Form):
     game_title = forms.CharField(max_length=100)
     game_username = forms.CharField(max_length=100)
     external_player_id = forms.CharField(max_length=100)    
 
-TournamentFormat = {
-    "SOLO": "1v1 SOLO",
+ENTRY_TYPE = {
+    "SOLO": "Solo (individuals)",
     "TEAM": "Team",
-    "OTHER": "Other",
 }
 
 class TournamentCreation(forms.Form):
     tournament_name = forms.CharField(max_length=255)
     description = forms.CharField(max_length=255)
     game_title = forms.CharField(max_length=255)
-    format =  forms.ChoiceField(widget=forms.RadioSelect, choices=TournamentFormat)
+    entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
     max_participants = forms.IntegerField(max_value=16)
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
@@ -57,6 +83,10 @@ class ScoreSubmissionForm(forms.Form):
         self.fields['matchVal'].initial = self.matchId
 
 
+class CreateTeamForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    tag = forms.CharField(max_length=100, required=False)
+
 class ManageTournament(forms.Form):
     participants = forms.ModelMultipleChoiceField(
         queryset=Member.objects.all(),
@@ -66,7 +96,7 @@ class ManageTournament(forms.Form):
     tournament_name = forms.CharField(max_length=255)
     description = forms.CharField(max_length=255)
     game_title = forms.CharField(max_length=255)
-    format =  forms.ChoiceField(widget=forms.RadioSelect, choices=TournamentFormat)
+    entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
     max_participants = forms.IntegerField(max_value=16)
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks

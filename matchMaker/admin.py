@@ -1,9 +1,17 @@
 from django.contrib import admin
-from .models import Member, Tournament, Team
+from .models import Member, Tournament, Team, TournamentNotification
 
-# Register your models here.
+
+class TournamentAdmin(admin.ModelAdmin):
+    exclude = ("layout",)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.layout or "bracket" not in obj.layout:
+            obj.layout = {"bracket": []}
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(Member)
-admin.site.register(Tournament)
+admin.site.register(Tournament, TournamentAdmin)
 admin.site.register(Team)
+admin.site.register(TournamentNotification)

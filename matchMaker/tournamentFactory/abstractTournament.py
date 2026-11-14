@@ -6,7 +6,9 @@ class AbstractTournament(ABC):
         self.object = Tournament.objects.get(id=tid)
         self.name = self.object.name
         self.description = self.object.description
-        self.layout = self.object.layout
+        self.layout = self.object.layout or {"bracket": []}
+        if "bracket" not in self.layout:
+            self.layout = {"bracket": []}
     
     @abstractmethod
     def findUserInBracket(self, uid):

@@ -1,7 +1,15 @@
+<!--
+
+Template for django forms was used and can be found here: https://docs.djangoproject.com/en/6.1/topics/forms/
+
+
+
+-->
+
 {% extends 'pageSkeleton.html' %}
 
 {% block content %}
-  <p><a id="uname" href="{% url 'profilePage' %}">Username</a>
+  <p><a id="uname" href="{% url 'profilePage' %}">{{ user.username }}</a>
     <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
   </p>
 
