@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: signleElim.py
+# Purpose: Code for single elimination tournament
+
 from ..models import Tournament
 from .abstractTournament import AbstractTournament
 import math

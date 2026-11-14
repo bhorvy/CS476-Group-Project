@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: obsever.py
+# Purpose: Code for observer pattern
+
 from abc import ABC, abstractmethod
 
 class Observer(ABC):

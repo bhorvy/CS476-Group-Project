@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: models.py
+# Purpose: Code for models
+
 from django.db import models
 from django.conf import settings
 

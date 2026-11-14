@@ -24,11 +24,8 @@ def matchMaker(request):
   return HttpResponse(template.render())
 
 def signUpPage(request):
-    # if this is a POST request we need to process the form data
     if request.method == "POST":
-        # create a form instance and populate it with data from the request:
         form = RegisterForm(request.POST)
-        # check whether it's valid:
         if form.is_valid():
             User = get_user_model()
             data = form.cleaned_data
@@ -51,18 +48,14 @@ def signUpPage(request):
                 messages.success(request, "Account created. Log in to continue.")
                 return HttpResponseRedirect('/loginPage/')
 
-    # if a GET (or any other method) we'll create a blank form
     else:
         form = RegisterForm()
 
     return render(request, 'register.html', {'form': form})
 
 def loginPage(request):
-    # if this is a POST request we need to process the form data
     if request.method == "POST":
-        # create a form instance and populate it with data from the request:
         form = LoginForm(request.POST)
-        # check whether it's valid:
         if form.is_valid():
             username = request.POST["username"]
             password = request.POST["password"]
@@ -73,25 +66,17 @@ def loginPage(request):
             else:
                 form.add_error(None, "Invalid username or password.")
 
-    # if a GET (or any other method) we'll create a blank form
     else:
         form = LoginForm()
 
     return render(request, 'login.html', {'form': form})
 
 def gameAccount(request):
-    # if this is a POST request we need to process the form data
     if request.method == "POST":
-        # create a form instance and populate it with data from the request:
         form = GameLinkForm(request.POST)
-        # check whether it's valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
             return HttpResponseRedirect('/homePage/')
 
-    # if a GET (or any other method) we'll create a blank form
     else:
         form = GameLinkForm()
 

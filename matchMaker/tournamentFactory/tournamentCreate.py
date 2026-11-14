@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: tournamentCreate.py
+# Purpose: Code for creating new tournament
+
 import random
 from ..models import Tournament
 

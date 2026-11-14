@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: urls.py
+# Purpose: Code for all url paths
+
 from django.urls import path
 from . import views
 

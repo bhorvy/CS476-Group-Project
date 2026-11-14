@@ -1,3 +1,10 @@
+
+
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: abstractTournament.py
+# Purpose: Code for regular tournament
+
 from abc import ABC, abstractmethod
 from ..models import Tournament
 

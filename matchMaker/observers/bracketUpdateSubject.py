@@ -1,3 +1,8 @@
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: bracketUpdateSubject.py
+# Purpose: Implement observer code
+
 from typing import List
 from .observer import Subject, Observer
 from ..models import TournamentNotification

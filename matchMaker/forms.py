@@ -1,4 +1,7 @@
-#
+# Class: CS 476
+# Professor: Dr. Samira Sadaoui
+# filename: abstractTournament.py
+# Purpose: Code for form classes
 #
 #
 # List of form fields: https://docs.djangoproject.com/en/6.1/ref/forms/fields/#django.forms.CharField
