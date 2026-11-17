@@ -51,7 +51,7 @@ class MemberProfileForm(forms.Form):
 class GameLinkForm(forms.Form):
     game_title = forms.CharField(max_length=100)
     game_username = forms.CharField(max_length=100)
-    external_player_id = forms.CharField(max_length=100)    
+    external_player_id = forms.CharField(max_length=100, required=False, label="Player ID (optional)") 
 
 ENTRY_TYPE = {
     "SOLO": "Solo (individuals)",

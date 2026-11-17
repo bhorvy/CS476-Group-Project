@@ -17,11 +17,20 @@ Template for django forms was used and can be found here: https://docs.djangopro
     {% endfor %}
   {% endif %}
   <form method="post">
-  
       {% csrf_token %}
       {{ form }}
-      <input type="submit" value="Submit">
-
+      <input type="submit" value="Save game account">
   </form>
+
+  <h2>Linked accounts</h2>
+  {% if accounts %}
+    <ul>
+      {% for account in accounts %}
+        <li>{{ account.game_title }} — {{ account.game_username }}{% if account.external_player_id %} ({{ account.external_player_id }}){% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No game accounts saved yet.</p>
+  {% endif %}
 
 {% endblock %}
