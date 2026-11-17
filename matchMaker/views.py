@@ -80,15 +80,6 @@ def loginPage(request):
 
     return render(request, 'login.html', {'form': form})
 
-<<<<<<< HEAD
-# render game account page
-def gameAccount(request):
-    if request.method == "POST":
-        form = GameLinkForm(request.POST)
-        if form.is_valid():
-            return HttpResponseRedirect('/homePage/')
-
-=======
 @login_required
 def gameAccount(request):
     member = _member_or_none(request.user)
@@ -110,7 +101,6 @@ def gameAccount(request):
             )
             messages.success(request, f"Saved {data['game_title']} account.")
             return HttpResponseRedirect("/gameAccount/")
->>>>>>> edd1075ec3e38c499b3436853e6827f8e1f5b9d2
     else:
         form = GameLinkForm()
 
@@ -320,7 +310,7 @@ def homePage(request):
 def logoutHandler(request):
     if(request.user.is_authenticated):
         logout(request)
-    return HttpResponseRedirect('/homePage/')
+    return HttpResponseRedirect('/')
 
 # render profile page
 @login_required

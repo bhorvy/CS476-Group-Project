@@ -12,9 +12,6 @@ Template for django forms was used and can be found here: https://docs.djangopro
 {% extends 'pageSkeleton.html' %}
 
 {% block content %}
-  <p><a id="uname" href="{% url 'profilePage' %}">{{ user.username }}</a>
-    <a id="gaccount" href="{% url 'gameAccount' %}">Game Account</a>
-  </p>
 
   <h1>MatchMaker</h1>
   {% if messages %}
@@ -23,4 +20,10 @@ Template for django forms was used and can be found here: https://docs.djangopro
     {% endfor %}
   {% endif %}
   <p>Welcome, {{ user.username }}.</p>
+
+  <h4>What is MatchMaker?</h4>
+  <p>MatchMaker is an online gaming tournament creation and registration application. 
+    In the world of online gaming, it is not uncommon for players to host tournaments. However, not many video games have options for formulating such tournaments. That is where MatchMaker comes in.
+  Here, you can create, view and register for tournaments online whether it'd be by yourself or with a team of your friends. You can link your gaming account to your MatchMaker account for the immersive experience.
+Have fun!</p>
 {% endblock %}
