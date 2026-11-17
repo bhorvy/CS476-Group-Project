@@ -33,6 +33,14 @@ margin-left:500px;
 margin-right: 500px;
 }
 
+h4 {
+color: black;
+text-align:left;
+font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+font-size:30px;
+margin-left:300px;
+}
+
 p {
 color: black;
 text-align:center;
@@ -74,6 +82,7 @@ font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans
 }
 
 form {
+border-radius: 10px;
 border-color: black;
 border-style:solid;
 background-color: white;
@@ -88,4 +97,20 @@ box-shadow: 10px 10px;
 input {
     width:100px;
     margin: 20px;
+}
+
+button {
+    border-radius: 10px;
+    background-image: linear-gradient(to top, teal, turquoise);
+    color: white;
+    border:none;
+    font-weight:bold;
+}
+
+[type = "submit"] {
+    border-radius: 10px;
+    background-image: linear-gradient(to top, teal, turquoise);
+    color: white;
+    border:none;
+    font-weight:bold;
 }
