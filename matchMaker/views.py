@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Member, Tournament, TournamentRegistration, Team
+from .models import Member, Tournament, TournamentRegistration, Team, GameAccount
 from datetime import datetime
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm
 from .tournamentFactory.singleElim import SingleElimination
@@ -80,6 +80,7 @@ def loginPage(request):
 
     return render(request, 'login.html', {'form': form})
 
+<<<<<<< HEAD
 # render game account page
 def gameAccount(request):
     if request.method == "POST":
@@ -87,10 +88,34 @@ def gameAccount(request):
         if form.is_valid():
             return HttpResponseRedirect('/homePage/')
 
+=======
+@login_required
+def gameAccount(request):
+    member = _member_or_none(request.user)
+    if not member:
+        messages.error(request, "Your account has no member profile, so you cannot link a game account.")
+        return HttpResponseRedirect("/homePage/")
+
+    if request.method == "POST":
+        form = GameLinkForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            GameAccount.objects.update_or_create(
+                member=member,
+                game_title=data["game_title"],
+                defaults={
+                    "game_username": data["game_username"],
+                    "external_player_id": data["external_player_id"],
+                },
+            )
+            messages.success(request, f"Saved {data['game_title']} account.")
+            return HttpResponseRedirect("/gameAccount/")
+>>>>>>> edd1075ec3e38c499b3436853e6827f8e1f5b9d2
     else:
         form = GameLinkForm()
 
-    return render(request, 'gameacc.html', {'form': form})
+    accounts = member.game_accounts.all()
+    return render(request, "gameacc.html", {"form": form, "accounts": accounts})
 
 # render tournament roster
 def _sync_tournament_roster(tournament):

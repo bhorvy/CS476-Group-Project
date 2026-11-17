@@ -38,7 +38,15 @@ Purpose: Code for user profile page
         none
       {% endfor %}
     </p>
+    <p>Game accounts:
+      {% for account in member.game_accounts.all %}
+        {{ account.game_title }} ({{ account.game_username }}){% if not forloop.last %}, {% endif %}
+      {% empty %}
+        none
+      {% endfor %}
+    </p>
      <button><a href="{% url 'editProfile' %}">Edit profile</a></button>
+     <p><a href="{% url 'gameAccount' %}">Add game account</a></p>
   {% else %}
     <p>No member profile is attached to this account.</p>
   {% endif %}
