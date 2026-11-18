@@ -23,6 +23,10 @@ class Member(models.Model):
   gender = models.CharField(max_length=1, choices=Gender.choices, blank=True)
   DOB = models.DateField()
   #profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+  #ban safty
+  is_power_user = models.BooleanField(default=False)
+  is_banned = models.BooleanField(default=False)
+  ban_reason = models.CharField(max_length=100,blank=True)
 
   def __str__(self):
     return f"{self.firstname} {self.lastname} ({self.user.username})"
@@ -139,3 +143,13 @@ class TournamentNotification(models.Model):
   message = models.CharField(max_length=255)
   created_at = models.DateTimeField(auto_now_add=True)
   is_read = models.BooleanField(default=False)
+
+class ScoreChange(models.Model):
+  tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='score_changes')
+  round_number = models.IntegerField()   # which bracket round
+  match_number = models.IntegerField()   # which match in that round
+  changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='score_changes')
+  old_scores = models.JSONField()        # scores before the change
+  new_scores = models.JSONField()        # scores after the change
+  reason = models.CharField(max_length=255)
+  created_at = models.DateTimeField(auto_now_add=True)
