@@ -31,8 +31,6 @@ class SingleElimination(AbstractTournament):
     def handleWinner(self, roundId, matchId, winnerId):
         data = self.layout
         #Check if it is the finals. If so, only handle the winner's id.
-        #TODO: Make a tournament winner field in either the layout or Tournament model,
-        #   and assign it as well when final match is complete.
         if (roundId + 1) == len(data["bracket"]):
             data["bracket"][roundId][matchId]["winner_id"] = winnerId
             self.object.layout = data
@@ -63,12 +61,9 @@ class SingleElimination(AbstractTournament):
                 return True
             return False
 
-    def deleteTournament(self):
-        self.object.delete()
-
     # update the score after finding the round and match ID from the tournament, send in the playerId to update and the 
     # the new score.
-    def updateScore(self, roundId, matchId, newScore):
+    def updateScore(self, roundId, matchId, newScore, isUpperBracket = False,):
         #get match from the JSON
         match = self.layout["bracket"][roundId][matchId] 
         # Update the scores based on array position of both the layout JSON and the array of new scores.

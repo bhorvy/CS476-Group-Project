@@ -19,17 +19,16 @@ class AbstractTournament(ABC):
         pass
 
     @abstractmethod
-    def handleWinner(self, roundId, matchId, winnerId):
+    def handleWinner(self, roundId, matchId, winnerId, isUpperBracket = False):
         pass
 
     @abstractmethod
     def determineWinner(self, roundId, matchId):
         pass
 
-    @abstractmethod
     def deleteTournament(self):
-        pass
+        self.object.delete()
 
     @abstractmethod
-    def updateScore(self, roundId, matchId, score):
+    def updateScore(self, roundId, matchId, score, isUpperBracket):
         pass

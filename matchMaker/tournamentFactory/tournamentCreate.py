@@ -20,13 +20,16 @@ class TournamentCreate:
         # Shuffle the players to randomize the bracket
         random.shuffle(bracketPlayers)
         # Create the initial bracket structure
+        return self.createDoubleElimBracket(bracketPlayers)
+
+    def createSingleElimBracket(self, players):
         bracket = []
         currentRound = []
-        for i in range(0, len(bracketPlayers), 2):
+        for i in range(0, len(players), 2):
             match = {
                 "players": [
-                    {"player_id": bracketPlayers[i], "score": 0},
-                    {"player_id": bracketPlayers[i + 1], "score": 0}
+                    {"player_id": players[i], "score": 0},
+                    {"player_id": players[i + 1], "score": 0}
                 ],
                 "winner_id": 0
             }
@@ -49,6 +52,61 @@ class TournamentCreate:
             currentRound = nextRound
             
         return {"bracket": bracket}
+
+    def createDoubleElimBracket(self, players):
+        upper_bracket = []
+        lower_bracket = []
+
+        #Upper bracket formation (similar to single elim)
+        currentRound = []
+        for i in range(0, len(players), 2):
+            match = {
+                "players": [
+                    {"player_id": players[i], "score": 0},
+                    {"player_id": players[i + 1], "score": 0}
+                ],
+                "winner_id": 0
+            }
+            currentRound.append(match)
+        upper_bracket.append(currentRound)
+
+        while len(currentRound) > 1:
+            nextRound = []
+            for _ in range(len(currentRound) // 2):
+                match = {
+                    "players": [
+                        {"player_id": 0, "score": 0},
+                        {"player_id": 0, "score": 0}
+                    ],
+                    "winner_id": 0
+                }
+                nextRound.append(match)
+            upper_bracket.append(nextRound)
+            currentRound = nextRound
+
+        #Lower bracket function
+        currentRound = upper_bracket[0]
+        print(currentRound)
+        while len(currentRound) > 1:
+            nextRound = []
+            #Lower bracket requires 2 times looping the same round size for major and minor rounds
+            for _ in range(2):
+                nextRound = []
+                for _ in range(len(currentRound) // 2):
+                    match = {
+                        "players": [
+                            {"player_id": 0, "score": 0},
+                            {"player_id": 0, "score": 0}
+                        ],
+                        "winner_id": 0
+                    }
+                    nextRound.append(match)
+                lower_bracket.append(nextRound)
+            currentRound = nextRound
+        return {"bracket" : {
+            "upper_bracket" : upper_bracket,
+            "lower_bracket" : lower_bracket
+        }}
 
     def createTournament(self):
         # Create a new Tournament instance and save it to the database
