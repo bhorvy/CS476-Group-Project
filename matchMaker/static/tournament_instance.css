@@ -1,15 +1,26 @@
+/*
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: tournament_instance.css
+Purpose: Styling for tournament instances
+*/
+
+/* Styling for tournament bracket*/
 #tournament-bracket{
     margin: 100px 10%;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
+
+/* Styling for match block */
 .match-block{
     width: 200px;
     border: 2px solid black;
     margin: 20px 0;
 }
 
+/* Styling for player block */
 .player-block{
     border: 1px solid black;
     height: 20px;
@@ -17,10 +28,12 @@
     justify-content: space-between;
 }
 
+/* Styling for player block */
 .player-block > span{
     display: block;
 }
 
+/* Styling for score popup */
 #score-popup{
     position: fixed;
     top: calc(50vh - 99px);
@@ -29,6 +42,7 @@
     z-index: 1000;
 }
 
+/* Styling for score popup form */
 #score-popup form{
     margin: 0
 }

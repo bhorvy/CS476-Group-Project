@@ -7,11 +7,13 @@ from abc import ABC, abstractmethod
 from typing import List
 from ..models import Tournament
 
+# observer pattern for tournaments
 class Observer(ABC):
     @abstractmethod
     def update(self, tournament: Tournament, message: str) -> None:
         pass
 
+# subject for tournaments
 class Subject(ABC):
     def __init__(self) -> None:
         self._observers: List[Observer] = []

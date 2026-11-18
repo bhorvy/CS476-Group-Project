@@ -1,3 +1,13 @@
+/*
+
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: navbar.css
+Purpose: Styling for navigation bar
+
+*/
+
+/* Styling for navigation bar */
 #navbar {
     position: fixed;
     height: 100vh;
@@ -8,6 +18,7 @@
     background-color: #181818;
 }
 
+/* Styling for navbar selector */
 #navbar > nav {
     height: 100%;
     display: flex;
@@ -15,6 +26,7 @@
     justify-content: space-between
 }
 
+/* Styling for hyperlink */
 #navbar a {
     color: white;
     text-decoration: none;
@@ -25,41 +37,49 @@
     align-items: center;
 }
 
+/* Styling for gloves ucon selector */
 #navbar a:has(#gloves-icon){
     padding: 0;
 }
 
+/* Styling for images */
 #navbar svg {
     width: 50%;
     height: 50%;
     fill: white;
 }
 
+/* Styling for images when hovered over */
 #navbar a:hover svg{
     fill: turquoise;
     transition-duration: 500ms;
 }
 
+/* Styling for gloves icon */
 #navbar #gloves-icon {
     width: 90%;
     height: 90%;
     margin-bottom: 30px;
 }
 
+/* Styling for gloves icon transistion */
 #navbar #gloves-icon:hover > path:first-child{
     fill: red;
     transition-duration: 500ms;
 }
 
+/* Styling for gloves icon transistion */
 #navbar #gloves-icon:hover > path:nth-child(2){
     fill: blue;
     transition-duration: 500ms;
 }
 
+/* Styling for top */
 .nav-top{
     margin-top: 5px;
 }
 
+/* Styling for bottom */
 .nav-bottom {
     margin-bottom: 20px;
 }
