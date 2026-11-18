@@ -117,10 +117,6 @@ class ManageTournament(forms.Form):
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
     start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
 
+#for ban reason
 class BanForm(forms.Form):
      reason = forms.CharField(max_length=150)
-
-class ScoreOverwriteForm(forms.Form):
-    score1 = forms.IntegerField(min_value=0)
-    score2 = forms.IntegerField(min_value=0)
-    reason = forms.CharField(max_length=150)

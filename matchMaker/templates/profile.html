@@ -50,4 +50,7 @@ Purpose: Code for user profile page
   {% else %}
     <p>No member profile is attached to this account.</p>
   {% endif %}
+  {% if request.user.is_staff %}
+  <p><a href="{% url 'adminMemberList' %}">Manage members</a></p>
+  {% endif %}
 {% endblock %}

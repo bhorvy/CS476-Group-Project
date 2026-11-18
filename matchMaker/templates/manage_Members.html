@@ -1,0 +1,39 @@
+<!--
+
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: adminMembers.html
+Purpose: Code for manage memebers page
+
+-->
+{% extends 'pageSkeleton.html' %}
+
+{% block content %}
+  <h1>Members</h1>
+
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <table>
+    <tr><th>Username</th><th>Name</th><th>Status</th><th>Action</th></tr>
+    {% for m in members %}
+      <tr>
+        <td>{{ m.user.username }}</td>
+        <td>{{ m.firstname }} {{ m.lastname }}</td>
+        <td>{% if m.is_banned %}Banned: {{ m.ban_reason }}{% else %}Active{% endif %}</td>
+        <td>
+          {% if not m.is_banned and m.user != request.user and not m.is_power_user %}
+            <form method="post" action="{% url 'adminBanMember' m.id %}">
+              {% csrf_token %}
+              <input type="text" name="reason" maxlength="100" placeholder="Ban reason" required>
+              <button type="submit">Ban</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

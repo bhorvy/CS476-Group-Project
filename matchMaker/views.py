@@ -19,11 +19,13 @@ from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Member, Tournament, TournamentRegistration, Team, GameAccount
 from datetime import datetime
-from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm
+from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm, BanForm
 from .tournamentFactory.singleElim import SingleElimination
 from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
 from .models import TournamentNotification
+from functools import wraps
+from .admin_services import ban_member, BanError
 
 # render demo page
 def matchMaker(request):
@@ -558,3 +560,35 @@ def tournamentNotifications(request):
             for notification in notifications
         ]
     })
+
+#only allow admin to open page
+def admin_required(view_func):
+    @login_required
+    @wraps(view_func)
+    def wrapper(request, *argument, **keywordargument):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return view_func(request, *argument, **keywordargument)
+    return wrapper
+
+#only for admin to ban a member
+@admin_required
+def adminBanMember(request, member_id):
+    member = get_object_or_404(Member, id=member_id)
+    reason = request.POST.get("reason", "").strip()
+
+    if not reason:
+        messages.error(request, "Please enter a ban reason")
+    else:
+        try:
+            ban_member(member, reason)
+            messages.success(request, f"{member.user.username} has been banned.")
+        except BanError as e:
+            messages.error(request, str(e))
+    return HttpResponseRedirect("/team/")
+
+#only admin can view the list of members
+@admin_required
+def adminMemberList(request):
+  members = Member.objects.select_related("user").order_by("user__username")
+  return render(request, "manage_Members.html", {"members": members})
