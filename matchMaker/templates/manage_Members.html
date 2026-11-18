@@ -17,18 +17,41 @@ Purpose: Code for manage memebers page
     {% endfor %}
   {% endif %}
 
-  <table>
-    <tr><th>Username</th><th>Name</th><th>Status</th><th>Action</th></tr>
-    {% for m in members %}
+    <table border="1" cellpadding="6">
       <tr>
-        <td>{{ m.user.username }}</td>
-        <td>{{ m.firstname }} {{ m.lastname }}</td>
-        <td>{% if m.is_banned %}Banned: {{ m.ban_reason }}{% else %}Active{% endif %}</td>
+        <th>Username</th>
+        <th>Name</th>
+        <th>Gender</th>
+        <th>Date of birth</th>
+        <th>Teams led</th>
+        <th>teams joined</th>
+        <th>status</th>
+        <th>Action</th>
+      </td>
+      {% for m in members %}
+      <tr>
+        <td>{{m.user.username}}</td>
+        <td>{{m.firstname}} {{m.lastname}}</td>
+        <td>{{m.gender}}</td>
+        <td>{{m.DOB}}</td>
+        <td>{% for team in member.led_teams.all %}
+          {{ team.name }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+          none
+          {% endfor %}
+        </td>
+        <td>{% for team in member.teams.all %}
+          {{ team.name }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+          none
+          {% endfor %}
+        </td>
+        <td>{% if m.is_banned %}Banned:{{ m.ban_reason }}{% else %}Active{% endif %}</td>
         <td>
           {% if not m.is_banned and m.user != request.user and not m.is_power_user %}
             <form method="post" action="{% url 'adminBanMember' m.id %}">
               {% csrf_token %}
-              <input type="text" name="reason" maxlength="100" placeholder="Ban reason" required>
+              <input type="text" name="reason" maxlength="150" placeholder="Ban reason" required>
               <button type="submit">Ban</button>
             </form>
           {% endif %}
