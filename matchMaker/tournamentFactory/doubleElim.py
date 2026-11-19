@@ -36,7 +36,7 @@ class DoubleElimination(AbstractTournament):
     #   if a winner_id is 0 (null), a winner is not decided. Therefore match is not complete.
     def IsMatchComplete(self, roundId, matchId, IsUpperBracket):
         return (self.object.layout["bracket"]["upper_bracket"][roundId][matchId]["winner_id"] > 0 if IsUpperBracket 
-                else self.object.layout["bracket"]["lower_bracket"][roundId][matchId]["winner_id"])
+                else self.object.layout["bracket"]["lower_bracket"][roundId][matchId]["winner_id"] > 0)
 
     def handleWinner(self, roundId, matchId, winnerId, isUpperBracket):
         data = self.layout

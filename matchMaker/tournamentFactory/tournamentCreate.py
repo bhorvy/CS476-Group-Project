@@ -20,7 +20,7 @@ class TournamentCreate:
         # Shuffle the players to randomize the bracket
         random.shuffle(bracketPlayers)
         # Create the initial bracket structure
-        return self.createDoubleElimBracket(bracketPlayers)
+        return self.createPools(bracketPlayers)
 
     def createSingleElimBracket(self, players):
         bracket = []
@@ -107,6 +107,47 @@ class TournamentCreate:
             "upper_bracket" : upper_bracket,
             "lower_bracket" : lower_bracket
         }}
+
+    def createPools(self, players):
+        bracket = []
+        pools = []
+        bracketSlots = (len(players) // 2 + 1) if len(players) % 2 == 1 else (len(players) // 2)
+        for i in range(0, len(players), 4):
+            pools.append(self.createPoolMatches(players[i:i + 4]))
+
+        # Create the initial bracket structure
+        while bracketSlots > 1:
+            currentRound = []
+            for _ in range(bracketSlots // 2):
+                match = {
+                    "players": [
+                        {"player_id": 0, "score": 0},
+                        {"player_id": 0, "score": 0}
+                    ],
+                    "winner_id": 0
+                }
+                currentRound.append(match)
+            bracket.append(currentRound)
+            bracketSlots = len(currentRound)
+        
+        return {
+            "pools": pools,
+            "bracket": bracket
+            }
+
+    def createPoolMatches(self, players):
+        #Pools are fixed to 4 players, so the code can be hardcoded.
+        return [
+            { "players": [{"player_id": players[0], "score": 0}, {"player_id": players[1], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[2], "score": 0}, {"player_id": players[3], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[0], "score": 0}, {"player_id": players[2], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[1], "score": 0}, {"player_id": players[3], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[0], "score": 0}, {"player_id": players[3], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[1], "score": 0}, {"player_id": players[2], "score": 0}], "winner_id": 0 },
+            { "players": [{"player_id": players[0], "wins": 0, "losses":0}, {"player_id": players[1], "wins": 0, "losses":0},
+                          { "player_id": players[2], "wins": 0, "losses":0}, {"player_id": players[3], "wins": 0, "losses":0}]}
+        ]
+
 
     def createTournament(self):
         # Create a new Tournament instance and save it to the database
