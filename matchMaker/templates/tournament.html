@@ -14,7 +14,7 @@ Purpose: Code for tournament page
     <link rel="stylesheet" href="{% static 'tournament_instance.css' %}">
     <script>
         function showScoreSubmission() {
-            fetch("/score-popup?roundId={{ round }}&matchId={{ match }}", {
+            fetch("/score-popup?roundId={{ round }}&matchId={{ match }}&is_bracket={{ is_bracket }}", {
                 method: 'GET',
                 
                 headers: {

@@ -30,7 +30,7 @@ class SingleElimination(AbstractTournament):
 
     #Function to determine if a match has is a completed match. Determined by the simple logic that
     #   if a winner_id is 0 (null), a winner is not decided. Therefore match is not complete.
-    def IsMatchComplete(self, roundId, matchId):
+    def IsMatchComplete(self, roundId, matchId, isBracket):
         return self.object.layout["bracket"][roundId][matchId]["winner_id"] > 0
 
     def handleWinner(self, roundId, matchId, winnerId):
@@ -55,7 +55,7 @@ class SingleElimination(AbstractTournament):
 
     #If a winner is to be called, compare the scores and move the bracket accordingly. Equal scores
     #   can not be accepted as no winner can be determined.
-    def determineWinner(self, roundId, matchId):
+    def determineWinner(self, roundId, matchId, isBracket = False):
             player1Score = self.layout["bracket"][roundId][matchId]["players"][0]["score"]
             player2Score = self.layout["bracket"][roundId][matchId]["players"][1]["score"]
             if player1Score > player2Score:

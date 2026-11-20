@@ -40,7 +40,7 @@ class Pools(AbstractTournament):
     #   if a winner_id is 0 (null), a winner is not decided. Therefore match is not complete.
     def IsMatchComplete(self, roundId, matchId, isBracket):
         return (self.object.layout["bracket"][roundId][matchId]["winner_id"] > 0 if isBracket 
-                else self.object.layout["pool"][roundId][matchId]["winner_id"] > 0)
+                else self.object.layout["pools"][roundId][matchId]["winner_id"] > 0)
 
     def handleWinner(self, roundId, matchId, winnerId, isBracket):
         data = self.layout
