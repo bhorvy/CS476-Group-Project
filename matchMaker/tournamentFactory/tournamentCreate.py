@@ -6,9 +6,9 @@ class TournamentCreate:
         self.name = name
         self.description = description
         self.players = players
+        self.format = format
         self.layout = self.generateBracket(players)
         self.gameName = gameName
-        self.format = format
     def generateBracket(self, players):
         # 1v1 brackets single elim correlate with length of bits cleanly (i.e. 16 players has 4 rounds),
         # Many of the lines of code are based on this fact.

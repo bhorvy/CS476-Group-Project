@@ -102,6 +102,7 @@ class ManageTournament(forms.Form):
     description = forms.CharField(max_length=255)
     game_title = forms.CharField(max_length=255)
     entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
+    format = forms.ChoiceField(widget=forms.Select, choices=FORMAT)
     max_participants = forms.IntegerField(max_value=16)
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
