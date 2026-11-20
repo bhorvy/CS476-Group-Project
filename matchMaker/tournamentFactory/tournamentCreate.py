@@ -2,12 +2,13 @@ import random
 from ..models import Tournament
 
 class TournamentCreate:
-    def __init__(self, name, description, players, gameName):
+    def __init__(self, name, description, players, gameName, format):
         self.name = name
         self.description = description
         self.players = players
         self.layout = self.generateBracket(players)
         self.gameName = gameName
+        self.format = format
     def generateBracket(self, players):
         # 1v1 brackets single elim correlate with length of bits cleanly (i.e. 16 players has 4 rounds),
         # Many of the lines of code are based on this fact.
@@ -20,7 +21,13 @@ class TournamentCreate:
         # Shuffle the players to randomize the bracket
         random.shuffle(bracketPlayers)
         # Create the initial bracket structure
-        return self.createPools(bracketPlayers)
+        match self.format:
+            case "SINGLE_ELIM":
+                return self.createSingleElimBracket(bracketPlayers)
+            case "DOUBLE_ELIM":
+                return self.createDoubleElimBracket(bracketPlayers)
+            case "POOLS":
+                return self.createPools(bracketPlayers)
 
     def createSingleElimBracket(self, players):
         bracket = []
@@ -136,7 +143,7 @@ class TournamentCreate:
             }
 
     def createPoolMatches(self, players):
-        #Pools are fixed to 4 players, so the code can be hardcoded.
+        #Pools are fixed to 4 players, so the matches can be hardcoded.
         return [
             { "players": [{"player_id": players[0], "score": 0}, {"player_id": players[1], "score": 0}], "winner_id": 0 },
             { "players": [{"player_id": players[2], "score": 0}, {"player_id": players[3], "score": 0}], "winner_id": 0 },

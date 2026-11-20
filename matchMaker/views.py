@@ -11,10 +11,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Member, Tournament, TournamentRegistration, Team
 from datetime import datetime
+
+from .models import Member, Tournament, TournamentRegistration, Team
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm
 from .tournamentFactory.singleElim import SingleElimination
+from .tournamentFactory.doubleElim import DoubleElimination
+from .tournamentFactory.pools import Pools
 from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
 from .models import TournamentNotification
@@ -110,18 +113,24 @@ def _sync_tournament_roster(tournament):
 
 @never_cache
 def tournamentPage(request, tid):
-    tournament = SingleElimination(tid)
+    format = Tournament.objects.get(id=tid).format
+    print(format)
+    tournament = None
+    match format:
+        case "SINGLE_ELIM":
+            tournament = SingleElimination(tid)
+        case "DOUBLE_ELIM":
+            tournament = DoubleElimination(tid)
+        case "POOLS":
+            tournament = Pools(tid)
     scoreSubmittable = False
     #This POST request is from the score submission popup.
     if request.method == "POST" and "player1_score" in request.POST:
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
-            #TODO: Modify updateScore parameters to submit proper round and match ids 
-            #   based on user accessing webpage (i.e. cookies for user).
             round_id = form.cleaned_data["roundVal"]
             match_id = form.cleaned_data["matchVal"]
-
+            is_upper_bracket = form.cleaned_data["is_upper_bracket"]
             match = tournament.layout["bracket"][round_id][match_id]
             player_ids = [
                 player["player_id"]
@@ -137,7 +146,8 @@ def tournamentPage(request, tid):
                 [
                     form.cleaned_data['player1_score'], 
                     form.cleaned_data['player2_score']
-                ]
+                ],
+                is_upper_bracket
             )
 
             notify_tournament_updated(
@@ -146,8 +156,7 @@ def tournamentPage(request, tid):
             "Your match score was updated.",
             )
             if form.cleaned_data['matchCompleted']:
-                if not tournament.determineWinner(form.cleaned_data['roundVal'], form.cleaned_data['matchVal']):
-                    #TODO: HTTP error for invalid submission
+                if not tournament.determineWinner(round_id, match_id, is_upper_bracket):
                     return
 
             winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
@@ -172,7 +181,12 @@ def tournamentPage(request, tid):
         if userPos is not None:
             round_id = userPos["round_id"]
             match_id = userPos["match_id"]
-            scoreSubmittable = not tournament.IsMatchComplete(round_id, match_id)
+            bracket_check = None
+            if(format == "DOUBLE_ELIM"):
+                bracket_check = userPos["is_upper_bracket"]
+            elif(format == "POOLS"):
+                bracket_check = userPos["is_bracket"]
+            scoreSubmittable = not tournament.IsMatchComplete(round_id, match_id, bracket_check)
         already_registered = (
             registrations.filter(member=member).exists()
             or registrations.filter(team__members=member).exists()
@@ -189,6 +203,7 @@ def tournamentPage(request, tid):
             "registrations": registrations,
             "already_registered": already_registered,
             "user_teams": user_teams,
+            "format": format
         },
     )
 
@@ -355,6 +370,7 @@ def manageTournament(request, tid):
                 tournament.description=data["description"]
                 tournament.game_title = data["game_title"]
                 tournament.entry_type = data["entry_type"]
+                tournament.format = data["format"]
                 tournament.min_rank = data["min_rank"]
                 tournament.max_rank = data["max_rank"]
                 tournament.max_participants = data["max_participants"]

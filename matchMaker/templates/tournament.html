@@ -81,33 +81,149 @@
     {% endif %}
 
     <div id="tournament-bracket">
-        {% for round in tournament.getBracket %}
-        <div class="round round-{{ forloop.counter }}">
-            {% for match in round %}
-            <div class="match-block match-{{ forloop.counter }}">
-                {% for player in match.players %}
-                <div class="player-block">
-                    <!-- Null player ids leave the user slot blank -->
-                    <span class="player-id">
-                        {% if player.player_id == 0 %}
+        {% if format == "SINGLE_ELIM" %}
+            {% for round in tournament.getBracket %}
+            <div class="round round-{{ forloop.counter }}">
+                {% for match in round %}
+                <div class="match-block match-{{ forloop.counter }}">
+                    {% for player in match.players %}
+                    <div class="player-block">
+                        <!-- Null player ids leave the user slot blank -->
+                        <span class="player-id">
+                            {% if player.player_id == 0 %}
+                                
+                            {% else %}
+                                Player {{ player.player_id }}
+                            {% endif %}
+                        </span>
+                        <span class="player-score">
+                            {% if player.player_id == 0 %}
                             
-                        {% else %}
-                            Player {{ player.player_id }}
-                        {% endif %}
-                    </span>
-                    <span class="player-score">
-                        {% if player.player_id == 0 %}
-                        
-                        {% else %}
-                            {{ player.score }}
-                        {% endif %}
-                    </span>
+                            {% else %}
+                                {{ player.score }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endfor %}
             </div>
             {% endfor %}
-        </div>
-        {% endfor %}
+        {% elif format == "DOUBLE_ELIM" %}
+            <div id="upper-bracket">
+            {% for round in tournament.getBracket.upper_bracket %}
+                <div class="round round-{{ forloop.counter }}">
+                {% for match in round %}
+                    <div class="match-block match-{{ forloop.counter }}">
+                        {% for player in match.players %}
+                    <div class="player-block">
+                        <!-- Null player ids leave the user slot blank -->
+                        <span class="player-id">
+                            {% if player.player_id == 0 %}
+                                
+                            {% else %}
+                                Player {{ player.player_id }}
+                            {% endif %}
+                        </span>
+                        <span class="player-score">
+                            {% if player.player_id == 0 %}
+                            
+                            {% else %}
+                                {{ player.score }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+            <div id="lower-bracket">
+            {% for round in tournament.getBracket.lower_bracket %}
+                <div class="round round-{{ forloop.counter }}">
+                {% for match in round %}
+                    <div class="match-block match-{{ forloop.counter }}">
+                        {% for player in match.players %}
+                    <div class="player-block">
+                        <!-- Null player ids leave the user slot blank -->
+                        <span class="player-id">
+                            {% if player.player_id == 0 %}
+                                
+                            {% else %}
+                                Player {{ player.player_id }}
+                            {% endif %}
+                        </span>
+                        <span class="player-score">
+                            {% if player.player_id == 0 %}
+                            
+                            {% else %}
+                                {{ player.score }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+            {% elif format == "POOLS" %}
+            <div id="pools">
+            {% for pool in tournament.getPools %}
+                <div class="pool pool-{{ forloop.counter }}">
+                {% for player in pool.6.players %}
+                    <div class="player-block">
+                        <!-- Null player ids leave the user slot blank -->
+                        <span class="player-id">
+                            {% if player.player_id == 0 %}
+                                
+                            {% else %}
+                                Player {{ player.player_id }}
+                            {% endif %}
+                        </span>
+                        <span class="player-score">
+                            {% if player.player_id == 0 %}
+                            
+                            {% else %}
+                                {{ player.wins }}-{{ player.losses }}
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+            <div id="bracket">
+            {% for round in tournament.getBracket %}
+                <div class="round round-{{ forloop.counter }}">
+                {% for match in round %}
+                    <div class="match-block match-{{ forloop.counter }}">
+                        {% for player in match.players %}
+                    <div class="player-block">
+                        <!-- Null player ids leave the user slot blank -->
+                        <span class="player-id">
+                            {% if player.player_id == 0 %}
+                                
+                            {% else %}
+                                Player {{ player.player_id }}
+                            {% endif %}
+                        </span>
+                        <span class="player-score">
+                            {% if player.player_id == 0 %}
+                            
+                            {% else %}
+                                {{ player.score }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
     </div>
     {% if score_submittable %}
         <button onclick="showScoreSubmission()">Submit Score</button>
