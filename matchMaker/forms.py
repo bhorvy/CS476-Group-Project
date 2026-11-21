@@ -98,6 +98,7 @@ class ScoreSubmissionForm(forms.Form):
         self.matchId = kwargs.pop('match_id', None)
         self.roundId = kwargs.pop('round_id', None)
         self.isBracket = kwargs.pop('is_bracket', None)
+        print(self.isBracket)
         super().__init__(*args, **kwargs)
         self.fields['roundVal'].initial = self.roundId
         self.fields['matchVal'].initial = self.matchId

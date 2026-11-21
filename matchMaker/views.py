@@ -151,14 +151,14 @@ def tournamentPage(request, tid):
                     match = tournament.layout["bracket"][round_id][match_id]
                 case "DOUBLE_ELIM":
                     if(is_bracket):
-                        match = tournament.layout["upper_bracket"][round_id][match_id]
+                        match = tournament.layout["bracket"]["upper_bracket"][round_id][match_id]
                     else:
-                        match = tournament.layout["lower_bracket"][round_id][match_id]
+                        match = tournament.layout["bracket"]["lower_bracket"][round_id][match_id]
                 case "POOLS":
                     if(is_bracket):
                         match = tournament.layout["bracket"][round_id][match_id]
                     else:
-                        match = tournament.layour["pools"][round_id][match_id]
+                        match = tournament.layout["pools"][round_id][match_id]
             player_ids = [
                 player["player_id"]
                 for player in match ["players"]
@@ -186,7 +186,19 @@ def tournamentPage(request, tid):
                 if not tournament.determineWinner(round_id, match_id, is_bracket):
                     return
 
-            winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
+            match format:
+                case "SINGLE_ELIM":
+                    winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
+                case "DOUBLE_ELIM":
+                    if(is_bracket):
+                        winner_id = tournament.layout["bracket"]["upper_bracket"][round_id][match_id]["winner_id"]
+                    else:
+                        winner_id = tournament.layout["bracket"]["lower_bracket"][round_id][match_id]["winner_id"]
+                case "POOLS":
+                    if(is_bracket):
+                        winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
+                    else:
+                        winner_id = tournament.layout["pools"][round_id][match_id]["winner_id"]
             winner = Member.objects.filter(pk=winner_id)
 
             notify_tournament_updated(
@@ -401,7 +413,7 @@ def scorePopup(request):
         print(request.GET.get('roundId'))
         print(request.GET.get('matchId'))
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'), 
-                                   is_bracket=request.GET.get('isBracket'))
+                                   is_bracket=request.GET.get('is_bracket'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
 # render tournament management
