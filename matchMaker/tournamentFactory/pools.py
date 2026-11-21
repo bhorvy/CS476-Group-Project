@@ -15,23 +15,20 @@ class Pools(AbstractTournament):
     #   starting from the latest point in the bracket. This is used solely to determine which
     #   match a user can edit, given older matches should not be edited. Returns null if no 
     #   instance of that user is found.
-    def findUserInBracket(self, uid):
-        if not self.layout.get("bracket"):
-            return None
+    def findUserInBracket(self, uid):      
         #Search bracket first, then pools after.
         for i in range(len(self.layout["bracket"]) - 1, -1, -1):
             for j in range(0, len(self.layout["bracket"][i])):
                 for k in range(0, len(self.layout["bracket"][i][j]["players"])):
                     if self.layout["bracket"][i][j]["players"][k]["player_id"] == uid:
                         return {"round_id": i, "match_id": j, "is_bracket": True}
-
-        for i in range(len(self.layout["pools"]) -1):
-            for j in range(5):
+        for i in range(len(self.layout["pools"])):
+            for j in range(6):
                 for k in range(0, len(self.layout["pools"][i][j]["players"])):
                     if self.layout["pools"][i][j]["players"][k]["player_id"] == uid:
                         if self.layout["pools"][i][j]["winner_id"] == 0:
                         #If the last 2 matches are played, then the player need not edit matches in the pool.
-                            if (j == 5 or j == 4):
+                            if ((j == 5 or j == 4) and self.layout["pools"][i][j]["winner_id"] > 0):
                                 return None
                             return {"pool_id": i, "match_id": j, "is_bracket": False}
         return None
@@ -81,7 +78,7 @@ class Pools(AbstractTournament):
 
             #If the pool is complete, move the top 2 participants to bracket stage.
             #First position and second position are on separate sides of the bracket to prevent replaying each other.
-            if(self.isPoolFinished):
+            if(self.isPoolFinished(roundId)):
                 data["bracket"][0][roundId]["players"][0]["player_id"] = scores[0]["player_id"]
                 data["bracket"][0][(roundId + (len(data["bracket"][0]) // 2)) % len(data["bracket"][0])]["players"][1]["player_id"] = scores[1]["player_id"]
                 

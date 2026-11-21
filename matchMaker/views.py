@@ -128,7 +128,6 @@ def _sync_tournament_roster(tournament):
 @never_cache
 def tournamentPage(request, tid):
     format = Tournament.objects.get(id=tid).format
-    print(format)
     tournament = None
     match format:
         case "SINGLE_ELIM":
@@ -142,7 +141,6 @@ def tournamentPage(request, tid):
     if request.method == "POST" and "player1_score" in request.POST:
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
-            print(form.cleaned_data)
             round_id = form.cleaned_data["roundVal"]
             match_id = form.cleaned_data["matchVal"]
             is_bracket = form.cleaned_data["isBracket"]
@@ -217,6 +215,7 @@ def tournamentPage(request, tid):
     member = _member_or_none(request.user)
     registrations = _sync_tournament_roster(tournament.object)
     if member:
+        print(member.id)
         userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
             match format:
