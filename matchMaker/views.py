@@ -215,7 +215,6 @@ def tournamentPage(request, tid):
     member = _member_or_none(request.user)
     registrations = _sync_tournament_roster(tournament.object)
     if member:
-        print(member.id)
         userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
             match format:
@@ -246,6 +245,7 @@ def tournamentPage(request, tid):
             or registrations.filter(team__members=member).exists()
         )
         user_teams = member.led_teams.all()
+    print(tournament.status)
     return render(
         request,
         "tournament.html",
@@ -428,6 +428,14 @@ def manageTournament(request, tid):
             form = ManageTournament(request.POST)
             # check whether it's valid:
             if form.is_valid():
+                action = request.POST.get("action")
+                if(action == "delete_tournament"):
+                    tournament.delete()
+                    return HttpResponseRedirect('/tournament/')
+                elif(action == "start_tournament"):
+                    tournament.status = "ONGOING"
+                    tournament.save()
+                    return HttpResponseRedirect(f'/tournament/{tournament.id}/')
                 data = form.cleaned_data
 
                 tournament.name=data["tournament_name"]
@@ -445,10 +453,16 @@ def manageTournament(request, tid):
                     player_ids = list(participants.values_list('id', flat=True))
                     tournament.layout = TournamentCreate(tournament.name, tournament.description, 
                                                          player_ids, tournament.game_title, tournament.format).layout
+                    for i in range(len(participants)):
+                        if (not (TournamentRegistration.objects.filter(member=participants[i], tournament=tournament))):
+                            registration = TournamentRegistration.objects.create(
+                                tournament=tournament, member=participants[i], status="ACCEPTED")
+                            registration.save()
+                    tournament.current_participants = len(participants)
 
                 tournament.save()
-
-                notify_tournament_updated(tournament, tournament.participants.all(), "The tournament bracket was updated.")
+                notify_tournament_updated(tournament, tournament.participants.all(),
+                                           f"The tournament bracket for {tournament.name} was updated.")
             # redirect to a newly updated tournament URL:
             return HttpResponseRedirect(f'/tournament/{tournament.id}/')
 
