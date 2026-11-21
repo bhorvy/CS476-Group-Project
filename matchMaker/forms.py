@@ -69,13 +69,17 @@ ENTRY_TYPE = {
     "SOLO": "Solo (individuals)",
     "TEAM": "Team",
 }
-
-# form for creating new tournaments
+FORMAT = {
+    "SINGLE_ELIM": "Single Elimination",
+    "DOUBLE_ELIM": "Double Elimination",
+    "POOLS": "Pools"
+}
 class TournamentCreation(forms.Form):
     tournament_name = forms.CharField(max_length=255)
     description = forms.CharField(max_length=255)
     game_title = forms.CharField(max_length=255)
     entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
+    format = forms.ChoiceField(widget=forms.Select, choices=FORMAT)
     max_participants = forms.IntegerField(max_value=16)
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
@@ -87,14 +91,17 @@ class ScoreSubmissionForm(forms.Form):
     player2_score = forms.IntegerField(min_value=0)
     roundVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
     matchVal = forms.IntegerField(initial=-1, required=False, label="", widget=forms.HiddenInput())
+    isBracket = forms.BooleanField(initial=False, required=False, label="", widget=forms.HiddenInput())
     matchCompleted = forms.BooleanField(label="Match Completed:", required=False)
 
     def __init__(self, *args, **kwargs):
         self.matchId = kwargs.pop('match_id', None)
         self.roundId = kwargs.pop('round_id', None)
+        self.isBracket = kwargs.pop('is_bracket', None)
         super().__init__(*args, **kwargs)
         self.fields['roundVal'].initial = self.roundId
         self.fields['matchVal'].initial = self.matchId
+        self.fields['isBracket'].initial = self.isBracket
 
 # form for creating teams
 class CreateTeamForm(forms.Form):
@@ -112,6 +119,7 @@ class ManageTournament(forms.Form):
     description = forms.CharField(max_length=255)
     game_title = forms.CharField(max_length=255)
     entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
+    format = forms.ChoiceField(widget=forms.Select, choices=FORMAT)
     max_participants = forms.IntegerField(max_value=16)
     min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
     max_rank = forms.CharField(max_length=255) # change this once we implement game ranks

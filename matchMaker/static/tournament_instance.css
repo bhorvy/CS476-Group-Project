@@ -11,9 +11,26 @@ Purpose: Styling for tournament instances
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 }
 
+<<<<<<< HEAD
 /* Styling for match block */
+=======
+#tournament-bracket:has(#upper-bracket), #tournament-bracket:has(#pools) {
+    display: flex;
+    flex-direction: column;
+}
+
+#upper-bracket, #lower-bracket, #pools, #bracket {
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width:90%;
+}
+
+>>>>>>> 261717766e6c4d2a7b97436394215172d97872f5
 .match-block{
     width: 200px;
     border: 2px solid black;
