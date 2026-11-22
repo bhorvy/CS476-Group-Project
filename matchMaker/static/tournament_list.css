@@ -1,3 +1,11 @@
+/*
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: tournament_list.css
+Purpose: Styling for tournament lists
+*/
+
+/* Styling for tournament list */
 #tournament-list{
     width:100%;
     height:100vh;
@@ -7,32 +15,41 @@
     align-items: center;
 }
 
+/* Styling for table container */
 #table-container{
     width:80%;
     height:500px;
     overflow-y: scroll;
 }
 
+/* Styling for table */
 #table-container > table{
     width: 100%;
 }
 
+/* Styling for table */
 #table-container > table td {
     text-align: center;
     padding: 10px 0;
 }
 
+/* Styling for child background */
 #table-container tbody > tr:nth-child(odd) {
     background-color: lightgrey;
 }
 
+/* Styling for table pagination */
 #table-container, .pagination {
     background-color: white;
 }
+
+/* Styling for pagination */
 .pagination {
     width: 80%;
     height: 50px;
 }
+
+/* Styling for table pagination divider */
 .pagination > div {
     margin:auto;
     height: 100%;
@@ -40,6 +57,8 @@
     display: flex;
     align-items: center;
 }
+
+/* Styling for table pagination hyperlinks */
 .pagination a{
     width: 20px;
     height: 20px;
@@ -48,6 +67,8 @@
     text-decoration: none;
     margin: 0 5px;
 }
+
+/* Styling for table pagination span*/
 .pagination span{
     margin: 0 10px;
 }

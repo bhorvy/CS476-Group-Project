@@ -1,3 +1,15 @@
+/*
+
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: style.css
+Purpose: Styling for all pages
+
+The following link was used to find specific features: https://www.w3schools.com/css/default.asp.
+
+*/
+
+/* Styling for main body */
 body {
   background-image: linear-gradient(to top, white, turquoise);
   background-repeat: no-repeat;
@@ -10,6 +22,7 @@ main {
   width: calc(100vw-115px);
 }
 
+/* Styling for heading */
 h1 {
 color: black;
 text-align:center;
@@ -18,6 +31,7 @@ margin-left:500px;
 margin-right: 500px;
 }
 
+/* Styling for heading */
 h2 {
 color: black;
 text-align:center;
@@ -26,6 +40,7 @@ margin-left:500px;
 margin-right: 500px;
 }
 
+/* Styling for heading */
 h3 {
 color: black;
 text-align:center;
@@ -34,6 +49,7 @@ margin-left:500px;
 margin-right: 500px;
 }
 
+/* Styling for heading */
 h4 {
 color: black;
 text-align:left;
@@ -41,20 +57,24 @@ font-size:30px;
 margin-left:300px;
 }
 
+/* Styling for paragraph */
 p {
 color: black;
 text-align:center;
 }
 
+/* Styling for hyperlinks */
 a {
 color: black;
 text-align:center;
 }
 
+/* Styling for greeting message */
 #greeting{
   margin-left:10px;
 }
 
+/* Styling for heading */
 #authlinks{
   margin-left: 450px;
   background-color:darkturquoise;
@@ -63,22 +83,7 @@ text-align:center;
   color: white;
 }
 
-#uname{
-  margin-right:600px;
-  background-color:darkturquoise;
-  font-size: 20px;
-  font-weight:bold;
-  color: white;
-}
-
-#gaccount{
-  margin-left:600px;
-  background-color:darkturquoise;
-  font-size: 20px;
-  font-weight:bold;
-  color: white;
-}
-
+/* Styling for forms */
 form {
 border-radius: 10px;
 border-color: black;
@@ -91,11 +96,13 @@ margin-right: 400px;
 box-shadow: 10px 10px;
 }
 
+/* Styling for input features */
 input {
     width:100px;
     margin: 20px;
 }
 
+/* Styling for buttons */
 button {
     border-radius: 10px;
     background-image: linear-gradient(to top, teal, turquoise);
@@ -104,6 +111,7 @@ button {
     font-weight:bold;
 }
 
+/* Styling for submit button */
 [type = "submit"] {
     border-radius: 10px;
     background-image: linear-gradient(to top, teal, turquoise);

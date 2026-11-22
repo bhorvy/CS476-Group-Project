@@ -1,5 +1,13 @@
 /* Credit: https://www.cssscript.com/tournament-bracket-flexbox/ */
 
+/*
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: tournament_instance.css
+Purpose: Styling for tournament instances
+*/
+
+/* Styling for tournament bracket*/
 #tournament-bracket{
     height:100%;
     min-width: calc(100% - 100px);
@@ -7,6 +15,8 @@
     margin-top: 50px;
 }
 
+
+/* Styling for match block */
 #tournament-bracket:has(#upper-bracket), #tournament-bracket:has(#pools) {
     display: flex;
     flex-direction: column;
@@ -42,6 +52,7 @@
     margin: 10px 20px 10px 0;
 }
 
+/* Styling for player block */
 .player-block{
     border: 1px solid black;
     height: 20px;
@@ -50,6 +61,7 @@
     padding: 1px 5px;
 }
 
+/* Styling for player block */
 .player-block > span{
     display: block;
 }
@@ -78,6 +90,7 @@
     border-right: none;
 }
 
+/* Styling for score popup */
 #score-popup{
     position: fixed;
     top: calc(50vh - 99px);
@@ -126,6 +139,7 @@
     background-image: none;
 }
 
+/* Styling for score popup form */
 #score-popup form{
     margin: 0
 }

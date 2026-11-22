@@ -32,7 +32,7 @@ from .admin_services import ban_member, BanError
 
 # render demo page
 def matchMaker(request):
-  template = loader.get_template('demo.html')
+  template = loader.get_template('homepage.html')
   return HttpResponse(template.render())
 
 # render signup page
@@ -96,7 +96,7 @@ def gameAccount(request):
         form = GameLinkForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            GameAccount.objects.update_or_create(
+            gameAccount.objects.update_or_create(
                 member=member,
                 game_title=data["game_title"],
                 defaults={
