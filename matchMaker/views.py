@@ -96,7 +96,7 @@ def gameAccount(request):
         form = GameLinkForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            GameAccount.objects.update_or_create(
+            gameAccount.objects.update_or_create(
                 member=member,
                 game_title=data["game_title"],
                 defaults={
