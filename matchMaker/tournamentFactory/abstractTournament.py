@@ -14,6 +14,7 @@ class AbstractTournament(ABC):
         self.name = self.object.name
         self.description = self.object.description
         self.layout = self.object.layout or {"bracket": []}
+        self.status = self.object.status
         if "bracket" not in self.layout:
             self.layout = {"bracket": []}
     
@@ -33,9 +34,13 @@ class AbstractTournament(ABC):
     def determineWinner(self, roundId, matchId):
         pass
 
-    def deleteTournament(self):
-        self.object.delete()
-
     @abstractmethod
     def updateScore(self, roundId, matchId, score, isUpperBracket):
         pass
+
+    def deleteTournament(self):
+        self.object.delete()
+        
+    def updateStatus(self, status):
+        self.status = status
+        self.object.save()
