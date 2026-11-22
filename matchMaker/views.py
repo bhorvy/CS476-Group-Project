@@ -32,7 +32,7 @@ from .admin_services import ban_member, BanError
 
 # render demo page
 def matchMaker(request):
-  template = loader.get_template('demo.html')
+  template = loader.get_template('homepage.html')
   return HttpResponse(template.render())
 
 # render signup page
