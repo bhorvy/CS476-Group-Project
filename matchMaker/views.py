@@ -35,13 +35,15 @@ def matchMaker(request):
   template = loader.get_template('homepage.html')
   return HttpResponse(template.render())
 
-# render signup page
+# View for the user signup webpage.
 def signUpPage(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
             User = get_user_model()
             data = form.cleaned_data
+            #Attempt to create User and Member role objects given the username isn't
+            #   already taken.
             try:
                 with transaction.atomic():
                     user = User.objects.create_user(
@@ -63,11 +65,12 @@ def signUpPage(request):
 
     else:
         form = RegisterForm()
-
     return render(request, 'register.html', {'form': form})
 
-# render login page
+# View for the user login webpage.
 def loginPage(request):
+    #GET: Render the login webpage.
+    #POST: Authenticate the user's credentials.
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -79,14 +82,15 @@ def loginPage(request):
                 return HttpResponseRedirect('/homePage/')
             else:
                 form.add_error(None, "Invalid username or password.")
-
     else:
         form = LoginForm()
-
     return render(request, 'login.html', {'form': form})
 
+#View for adding a game account.
 @login_required
 def gameAccount(request):
+    #GET: Render the form to add a game account.
+    #POST: Add the account to the database
     member = _member_or_none(request.user)
     if not member:
         messages.error(request, "Your account has no member profile, so you cannot link a game account.")
@@ -124,9 +128,10 @@ def _sync_tournament_roster(tournament):
     tournament.save(update_fields=["current_participants"])
     return registrations.select_related("member__user", "team").prefetch_related("team__members__user")
 
-# render tournament page
+# View for the tournament bracket webpage
 @never_cache
 def tournamentPage(request, tid):
+    #Get the bracket-specific class based on the format type. 
     format = Tournament.objects.get(id=tid).format
     tournament = None
     match format:
@@ -137,13 +142,16 @@ def tournamentPage(request, tid):
         case "POOLS":
             tournament = Pools(tid)
     scoreSubmittable = False
-    #This POST request is from the score submission popup.
+    #GET: Render the webpage and all the options/parameters specific to who is logged in
+    #   and the type of tournament bracket rendered.
+    #POST: Submit scores for a specific match using the score popup.
     if request.method == "POST" and "player1_score" in request.POST:
         form = ScoreSubmissionForm(request.POST)
         if form.is_valid():
             round_id = form.cleaned_data["roundVal"]
             match_id = form.cleaned_data["matchVal"]
             is_bracket = form.cleaned_data["isBracket"]
+            #The JSON for the bracket layout is different for each bracket type.
             match format:
                 case "SINGLE_ELIM":
                     match = tournament.layout["bracket"][round_id][match_id]
@@ -175,6 +183,7 @@ def tournamentPage(request, tid):
                 is_bracket
             )
 
+            #Use the observer to notify all current participants in the tournament.
             notify_tournament_updated(
             tournament.object,
             members,
@@ -184,6 +193,8 @@ def tournamentPage(request, tid):
                 if not tournament.determineWinner(round_id, match_id, is_bracket):
                     return
 
+            #The JSON for the bracket layout is different for each bracket type. Therefore, 
+            #   the winner id gets placed slightly different based on bracket type.
             match format:
                 case "SINGLE_ELIM":
                     winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
@@ -197,8 +208,9 @@ def tournamentPage(request, tid):
                         winner_id = tournament.layout["bracket"][round_id][match_id]["winner_id"]
                     else:
                         winner_id = tournament.layout["pools"][round_id][match_id]["winner_id"]
-            winner = Member.objects.filter(pk=winner_id)
 
+            #Notify the winner of that match using the observer.
+            winner = Member.objects.filter(pk=winner_id)
             notify_tournament_updated(
             tournament.object,
             winner,
@@ -207,6 +219,7 @@ def tournamentPage(request, tid):
 
             return redirect(request.path)
 
+    #Parameters needed to properly render the tournament bracket webpage.
     round_id = None
     match_id = None
     is_bracket = False
@@ -217,6 +230,8 @@ def tournamentPage(request, tid):
     if member:
         userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
+            #Values for round_id, match_id, is_bracket, and bracket_check differ based
+            #   on the bracket type.
             match format:
                 case "SINGLE_ELIM":
                     round_id = userPos["round_id"]
@@ -232,8 +247,6 @@ def tournamentPage(request, tid):
                     else:   
                         round_id = userPos["pool_id"]
                     match_id = userPos["match_id"]
-                    
-            
             bracket_check = None
             if(format == "DOUBLE_ELIM"):
                 bracket_check = userPos["is_upper_bracket"]
@@ -262,7 +275,7 @@ def tournamentPage(request, tid):
         },
     )
 
-# render tournament reigsteration
+# View for handling tournament registration.
 @login_required
 def registerForTournament(request, tid):
     tournament = get_object_or_404(Tournament, id=tid)
@@ -324,9 +337,11 @@ def registerForTournament(request, tid):
         messages.success(request, "You joined this tournament.")
     return HttpResponseRedirect(f"/tournament/{tid}/")
 
-# render tournament creation
+# View for the webpage used to create a tournament.
 @login_required
 def tournamentCreatePage(request):
+    #GET: Render an empty from for tournament creation.
+    #POST: Submit the form to create a new Tournament object.
     if request.method == "POST":
            # create a form instance and populate it with data from the request:
            form = TournamentCreation(request.POST)
@@ -359,24 +374,24 @@ def tournamentCreatePage(request):
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 
-# render home page
+# Home page view.
 def homePage(request):
   template = loader.get_template('homepage.html')
   return render(request, "homepage.html", {})
 
-# enable log out
+# View for logging out the user.
 def logoutHandler(request):
     if(request.user.is_authenticated):
         logout(request)
     return HttpResponseRedirect('/')
 
-# render profile page
+# View for rendering the user's profile.
 @login_required
 def profilePage(request):
     member = _member_or_none(request.user)
     return render(request, "profile.html", {"member": member})
 
-# enable profile edit
+# View for displaying the form that allows the user to edit their profile.
 @login_required
 def editProfile(request):
     member = _member_or_none(request.user)
@@ -384,6 +399,8 @@ def editProfile(request):
         messages.error(request, "Your account has no member profile, so you cannot edit your profile.")
         return HttpResponseRedirect("/profilePage/")
 
+    #GET: Render the form to edit their profile.
+    #POST: Submit the form to make the changes.
     if request.method == "POST":
         form = MemberProfileForm(request.POST)
         if form.is_valid():
@@ -403,10 +420,10 @@ def editProfile(request):
                 "DOB": member.DOB,
             },
         )
-
     return render(request, "profileEdit.html", {"form": form})
 
-# render score
+# Render the score submission popup that allows the user to submit the score
+#   for the associated tournamnet.
 def scorePopup(request):
     if(request.method == "GET"):
         print(request.GET.get('roundId'))
@@ -415,19 +432,21 @@ def scorePopup(request):
                                    is_bracket=request.GET.get('is_bracket'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
 
-# render tournament management
+# Renders the tournament management page for an administrator.
 @login_required
 def manageTournament(request, tid):
     # implementing the is_staff for now, so only admins can change it
     if not request.user.is_staff:
         raise PermissionDenied
-
     tournament = get_object_or_404(Tournament, id=tid)
+    #GET: Render the tournament management form.
+    #POST: Handle various management actions.
     if request.method == "POST":
             # create a form instance and populate it with data from the request:
             form = ManageTournament(request.POST)
-            # check whether it's valid:
             if form.is_valid():
+                #Check if the tournament deletion or tournament initiation buttons
+                #   were pressed and handle their actions.
                 action = request.POST.get("action")
                 if(action == "delete_tournament"):
                     tournament.delete()
@@ -436,8 +455,9 @@ def manageTournament(request, tid):
                     tournament.status = "ONGOING"
                     tournament.save()
                     return HttpResponseRedirect(f'/tournament/{tournament.id}/')
+                #If those buttons were not press, the submit button was pressed instead.
+                #Handle the form as a result.
                 data = form.cleaned_data
-
                 tournament.name=data["tournament_name"]
                 tournament.description=data["description"]
                 tournament.game_title = data["game_title"]
@@ -448,6 +468,8 @@ def manageTournament(request, tid):
                 tournament.max_participants = data["max_participants"]
                 tournament.start_date = data["start_date"]
 
+                #If any participants were added, they will also need to be synced to the TournamentRegistration model,
+                #   and any related values need to be updated like participant count.
                 participants= data["participants"]
                 if len(participants) <= tournament.max_participants:
                     player_ids = list(participants.values_list('id', flat=True))
@@ -461,9 +483,10 @@ def manageTournament(request, tid):
                     tournament.current_participants = len(participants)
 
                 tournament.save()
+                #Let the tournament participants know that the bracket is updated.
                 notify_tournament_updated(tournament, tournament.participants.all(),
                                            f"The tournament bracket for {tournament.name} was updated.")
-            # redirect to a newly updated tournament URL:
+            # redirect to the newly updated tournament's URL:
             return HttpResponseRedirect(f'/tournament/{tournament.id}/')
 
         # if a GET (or any other method) we'll get the tournamenet with its information
@@ -482,9 +505,10 @@ def manageTournament(request, tid):
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 
-# render tournament list
+# View for the list of tournaments.
 @never_cache
 def TournamentList(request, id=1):
+    #Utilize the builtin django paginator to limit the amount of entries per page.
     pageNumber = request.GET.get('page') or 1
     tournamentList = Tournament.objects.all().order_by('id')
     paginator = Paginator(tournamentList, 10)
@@ -498,6 +522,7 @@ def TournamentList(request, id=1):
 
     return render(request, 'tournamentList.html', {'page':page})
 
+#Method for checking if there is a user and if that user has a Member role.
 def _member_or_none(user):
     if not user.is_authenticated:
         return None

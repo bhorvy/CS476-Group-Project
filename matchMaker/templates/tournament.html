@@ -249,7 +249,7 @@ Purpose: Code for tournament page
         {% if score_submittable and tournament.status == "ONGOING" %}
         <button onclick="showScoreSubmission()">Submit Score</button>
         {% endif %}
-        {% if user.is_superuser %}
+        {% if user.is_staff %}
         <a href ="{% url 'manageTournament' tournament.object.id %}">Manage Tournament</a >
         {% endif %}
     </div>
