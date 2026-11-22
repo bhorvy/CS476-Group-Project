@@ -25,5 +25,6 @@ urlpatterns = [
     path('logout/', views.logoutHandler, name='logoutHandler'),
     path("notifications/", views.tournamentNotifications, name="tournamentNotifications"),
     path('admin-tools/member/<int:member_id>/ban/', views.adminBanMember, name='adminBanMember'),
+    path('admin-tools/member/<int:member_id>/unban/', views.adminUnbanMember, name='adminUnbanMember'),
     path('admin-tools/members/', views.adminMemberList, name='adminMemberList'),
 ]

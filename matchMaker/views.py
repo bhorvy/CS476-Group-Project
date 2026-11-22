@@ -26,9 +26,9 @@ from .tournamentFactory.doubleElim import DoubleElimination
 from .tournamentFactory.pools import Pools
 from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
-from .models import TournamentNotification
+from .models import TournamentNotification,BanError
 from functools import wraps
-from .admin_services import ban_member, BanError
+from django.views.decorators.http import require_POST
 
 # render demo page
 def matchMaker(request):
@@ -78,8 +78,13 @@ def loginPage(request):
             password = request.POST["password"]
             user = authenticate(request, username=username, password=password)
             if user is not None:
-                login(request, user)
-                return HttpResponseRedirect('/homePage/')
+                #is the users is baned they get fstring messsage that their account are banned with reason
+                member=_member_or_none(user)
+                if member and member.is_banned:
+                    form.add_error(None,f"this account is baned by admin reason: {member.ban_reason}")
+                else:
+                    login(request, user)
+                    return HttpResponseRedirect('/homePage/')
             else:
                 form.add_error(None, "Invalid username or password.")
     else:
@@ -668,24 +673,40 @@ def admin_required(view_func):
         return view_func(request, *argument, **keywordargument)
     return wrapper
 
-#only for admin to ban a member
+#function for admin to ban a member with a message with username  
+#check if admin provided the reason 
+#ban error if its admin/super user 
 @admin_required
+@require_POST
 def adminBanMember(request, member_id):
     member = get_object_or_404(Member, id=member_id)
     reason = request.POST.get("reason", "").strip()
-
     if not reason:
         messages.error(request, "Please enter a ban reason")
     else:
         try:
-            ban_member(member, reason)
-            messages.success(request, f"{member.user.username} has been banned.")
+            member.ban(reason)
+            messages.success(request,f"{member.user.username} has been banned.")
         except BanError as e:
-            messages.error(request, str(e))
-    return HttpResponseRedirect("/team/")
+            messages.error(request,str(e))
+    return redirect("adminMemberList")
 
-#only admin can view the list of members
+#function to unban a user with a message with username
+@admin_required
+@require_POST
+def adminUnbanMember(request,member_id):
+    member=get_object_or_404(Member,id=member_id)
+    member.unban()
+    messages.success(request,f"{member.user.username} was unbanned successfully")
+    return redirect("adminMemberList")
+
+#only admin can view the list of all the users
 @admin_required
 def adminMemberList(request):
-  members = Member.objects.select_related("user").order_by("user__username")
-  return render(request, "manage_Members.html", {"members": members})
+    members=(
+        Member.objects
+        .select_related("user")
+        .prefetch_related("led_teams","teams")
+        .order_by("user__username")
+    )
+    return render(request,"manage_Members.html",{"members":members})

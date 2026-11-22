@@ -11,6 +11,9 @@ class Gender(models.TextChoices):
         FEMALE = "F", "Female"
         OTHER = "O", "Other"
 
+class BanError(Exception):
+  pass
+  
 #model for members, the users of the system
 class Member(models.Model):
   user = models.OneToOneField(
@@ -30,6 +33,22 @@ class Member(models.Model):
 
   def __str__(self):
     return f"{self.firstname} {self.lastname} ({self.user.username})"
+
+  def ban(self,reason):
+    #power user cannot ban another power user 
+    if self.is_power_user or self.user.is_staff:
+      raise BanError("this user cannot be banned.")
+    #if the user is already baned cannot be banned again
+    if self.is_banned:
+      raise BanError("this user is already banned.")
+    self.is_banned=True
+    self.ban_reason=reason
+    self.save(update_fields=["is_banned","ban_reason"])#updating after baned 
+
+  def unban(self):
+    self.is_banned=False
+    self.ban_reason=""
+    self.save(update_fields=["is_banned","ban_reason"])#updating after unbaning
 
 #model for teams, ie who are the members and who is the captain
 class Team(models.Model):

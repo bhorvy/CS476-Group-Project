@@ -2,7 +2,7 @@
 
 Class: CS 476
 Professor: Dr. Samira Sadaoui
-filename: adminMembers.html
+filename: manage_memebers.html
 Purpose: Code for manage memebers page
 
 -->
@@ -48,13 +48,18 @@ Purpose: Code for manage memebers page
         </td>
         <td>{% if m.is_banned %}Banned:{{ m.ban_reason }}{% else %}Active{% endif %}</td>
         <td>
-          {% if not m.is_banned and m.user != request.user and not m.is_power_user %}
-            <form method="post" action="{% url 'adminBanMember' m.id %}">
-              {% csrf_token %}
-              <input type="text" name="reason" maxlength="150" placeholder="Ban reason" required>
-              <button type="submit">Ban</button>
-            </form>
-          {% endif %}
+          {% if m.is_banned %}
+          <form method="post" action="{% url 'adminUnbanMember' m.id %}">
+            {% csrf_token %}
+            <button type="submit">Unban</button>
+          </form>
+          {% elif m.user != request.user and not m.is_power_user and not m.user.is_staff %}
+          <form method="post" action="{% url 'adminBanMember' m.id %}">
+          {% csrf_token %}
+          <input type="text" name="reason" maxlength="150" placeholder="Ban reason" required>
+          <button type="submit">Ban</button>
+          </form>
+          {% else %} Admin {% endif %}
         </td>
       </tr>
     {% endfor %}
