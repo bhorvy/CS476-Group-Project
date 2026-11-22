@@ -37,89 +37,97 @@ Purpose: Code for tournament page
         {% endfor %}
     {% endif %}
     {% if tournament.status == "UPCOMING"%}
-        <p>
+        <div id="registration">
+            <p>
             {{ tournament.object.get_entry_type_display }} tournament —
             {{ tournament.object.current_participants }}/{{ tournament.object.max_participants }} registered
-        </p>
-        {% if registrations %}
-            <ul>
-                {% for entry in registrations %}
-                    {% if entry.team %}
-                        <li>
-                            Team {{ entry.team.name }}
-                            (registered by {{ entry.member.user.username }}):
-                            {% for teammate in entry.team.members.all %}
-                                {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </li>
-                    {% else %}
-                        <li>{{ entry.member.user.username }}</li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No players have joined yet.</p>
-        {% endif %}
-        {% if user.is_authenticated %}
-            {% if already_registered %}
-                <p>You are registered for this tournament.</p>
-            {% else %}
-                <form method="post" action="{% url 'registerTournament' tournament.object.id %}">
-                    {% csrf_token %}
-                    {% if tournament.object.entry_type == "TEAM" %}
-                        {% if user_teams %}
-                            <label for="team_id">Register team</label>
-                            <select name="team_id" id="team_id" required>
-                                {% for team in user_teams %}
-                                    <option value="{{ team.id }}">{{ team.name }}</option>
+            </p>
+            {% if registrations %}
+            <!--
+                <ul>
+                    {% for entry in registrations %}
+                        {% if entry.team %}
+                            <li>
+                                Team {{ entry.team.name }}
+                                (registered by {{ entry.member.user.username }}):
+                                {% for teammate in entry.team.members.all %}
+                                    {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
-                            </select>
-                            <button type="submit">Register team</button>
+                            </li>
                         {% else %}
-                            <p>Only a team leader can register. Create a team on the Teams page, or ask your leader to register.</p>
+                            <li>{{ entry.member.user.username }}</li>
                         {% endif %}
-                    {% else %}
-                        <button type="submit">Register</button>
-                    {% endif %}
-                </form>
+                    {% endfor %}
+                </ul>
+            -->
+            {% else %}
+                <p>No players have joined yet.</p>
             {% endif %}
-        {% else %}
-            <p><a href="{% url 'loginPage' %}">Log in</a> to register for this tournament.</p>
+            {% if user.is_authenticated %}
+                {% if already_registered %}
+                    <p>You are registered for this tournament.</p>
+                {% else %}
+                    <p>You can register for this tournament by clicking the "Register" button below.</p>
+                    <form method="post" action="{% url 'registerTournament' tournament.object.id %}">
+                        {% csrf_token %}
+                        {% if tournament.object.entry_type == "TEAM" %}
+                            {% if user_teams %}
+                                <label for="team_id">Register team</label>
+                                <select name="team_id" id="team_id" required>
+                                    {% for team in user_teams %}
+                                        <option value="{{ team.id }}">{{ team.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit">Register team</button>
+                            {% else %}
+                                <p>Only a team leader can register. Create a team on the Teams page, or ask your leader to register.</p>
+                            {% endif %}
+                        {% else %}
+                            <button type="submit">Register</button>
+                        {% endif %}
+                    </form>
+                {% endif %}
+            {% else %}
+                <p><a href="{% url 'loginPage' %}">Log in</a> to register for this tournament.</p>
+            {% endif %}
+            {% if not tournament.getBracket %}
+                <p>No bracket yet. This tournament was created with 0 players.</p>
+            {% endif %}
         {% endif %}
-        {% if not tournament.getBracket %}
-            <p>No bracket yet. This tournament was created with 0 players.</p>
-        {% endif %}
-    {% endif %}
+        </div>
+        
 
     <div id="tournament-bracket">
         {% if format == "SINGLE_ELIM" %}
+            <div id="single-elim">
             {% for round in tournament.getBracket %}
-            <div class="round round-{{ forloop.counter }}">
-                {% for match in round %}
-                <div class="match-block match-{{ forloop.counter }}">
-                    {% for player in match.players %}
-                    <div class="player-block">
-                        <!-- Null player ids leave the user slot blank -->
-                        <span class="player-id">
-                            {% if player.player_id == 0 %}
+                <div class="round round-{{ forloop.counter }}">
+                    {% for match in round %}
+                    <div class="match-block match-{{ forloop.counter }}">
+                        {% for player in match.players %}
+                        <div class="player-block">
+                            <!-- Null player ids leave the user slot blank -->
+                            <span class="player-id">
+                                {% if player.player_id == 0 %}
+                                    
+                                {% else %}
+                                    Player {{ player.player_id }}
+                                {% endif %}
+                            </span>
+                            <span class="player-score">
+                                {% if player.player_id == 0 %}
                                 
-                            {% else %}
-                                Player {{ player.player_id }}
-                            {% endif %}
-                        </span>
-                        <span class="player-score">
-                            {% if player.player_id == 0 %}
-                            
-                            {% else %}
-                                {{ player.score }}
-                            {% endif %}
-                        </span>
+                                {% else %}
+                                    {{ player.score }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
                     </div>
                     {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
             {% endfor %}
+            </div>
         {% elif format == "DOUBLE_ELIM" %}
             <div id="upper-bracket">
             {% for round in tournament.getBracket.upper_bracket %}
@@ -183,6 +191,7 @@ Purpose: Code for tournament page
             <div id="pools">
             {% for pool in tournament.getPools %}
                 <div class="pool pool-{{ forloop.counter }}">
+                <span class="pool-name">Pool {{ forloop.counter }}</span>
                 {% for player in pool.6.players %}
                     <div class="player-block">
                         <!-- Null player ids leave the user slot blank -->
@@ -236,11 +245,16 @@ Purpose: Code for tournament page
             </div>
         {% endif %}
     </div>
-    {% if score_submittable %}
+    <div class="options">
+        {% if score_submittable and tournament.status == "ONGOING" %}
         <button onclick="showScoreSubmission()">Submit Score</button>
-    {% endif %}
+        {% endif %}
+        {% if user.is_superuser %}
+        <a href ="{% url 'manageTournament' tournament.object.id %}">Manage Tournament</a >
+        {% endif %}
+    </div>
+    
     <div id="score-popup"></div>
 
-    <!-- Wrap logic around if the user is an admin they can manage the tournament -->
-    <a href ="{% url 'manageTournament' tournament.object.id %}">Manage Tournament</a >
+    
 {% endblock %}

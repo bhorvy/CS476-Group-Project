@@ -1,9 +1,10 @@
+/* Credit: https://www.cssscript.com/tournament-bracket-flexbox/ */
+
 #tournament-bracket{
-    margin: 100px 10%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    height:100%;
+    min-width: calc(100% - 100px);
+    position: absolute;
+    margin-top: 50px;
 }
 
 #tournament-bracket:has(#upper-bracket), #tournament-bracket:has(#pools) {
@@ -11,18 +12,34 @@
     flex-direction: column;
 }
 
-#upper-bracket, #lower-bracket, #pools, #bracket {
+#tournament-bracket > * {
+    background-color: white;
+    padding: 40px;
+    margin: 20px;
+    border: 3px solid black;
+    border-radius: 5px;
+}
+
+#upper-bracket, #lower-bracket, #pools, #bracket, #single-elim {
+    position: relative;
     display:flex;
     flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width:90%;
+}
+
+.round {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    justify-content: space-around;
+    align-content: center;
 }
 
 .match-block{
-    width: 200px;
+    min-width: 200px;
+    max-width: 240px;
     border: 2px solid black;
-    margin: 20px 0;
+    border-radius: 5px;
+    margin: 10px 20px 10px 0;
 }
 
 .player-block{
@@ -30,10 +47,35 @@
     height: 20px;
     display: flex;
     justify-content: space-between;
+    padding: 1px 5px;
 }
 
 .player-block > span{
     display: block;
+}
+
+.pool {
+    width: 200px;
+    border: 3px solid black;
+    border-radius: 3px;
+    margin: 0 30px;
+}
+
+.pool > * {
+    padding: 5px 10px;
+}
+
+.pool > .pool-name{
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    background-color: turquoise;
+    color: black;
+}
+
+.pool > .player-block{
+    border-left: none;
+    border-right: none;
 }
 
 #score-popup{
@@ -42,6 +84,46 @@
     left: calc(50vw - 125px);
     padding: 20px;
     z-index: 1000;
+}
+
+#registration {
+    width: 30vw;
+    padding: 10px;
+    margin: auto;
+    background-color: white;
+    border: 3px solid black;
+    border-radius: 3px;
+}
+
+#registration form{
+    border: none;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 0 0;
+    display: flex;
+}
+
+#registration form > button {
+    margin: auto;
+    padding: 10px 20px;
+}
+
+.options {
+    position: fixed;
+    top: 50px;
+    right: 50px;
+}
+
+.options > * {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #181818;
+    color: white;
+    background-image: none;
 }
 
 #score-popup form{

@@ -245,7 +245,7 @@ def tournamentPage(request, tid):
             or registrations.filter(team__members=member).exists()
         )
         user_teams = member.led_teams.all()
-    print(tournament.status)
+    
     return render(
         request,
         "tournament.html",
