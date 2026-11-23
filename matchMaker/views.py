@@ -232,6 +232,11 @@ def tournamentPage(request, tid):
     user_teams = Team.objects.none()
     member = _member_or_none(request.user)
     registrations = _sync_tournament_roster(tournament.object)
+    userList = TournamentRegistration.objects.filter(tournament=Tournament.objects.get(id=tid))
+    userInfo = {}
+    for i in userList:
+        userInfo[i.member.id] = i.member.user.username
+    print(userInfo)
     if member:
         userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
@@ -276,7 +281,8 @@ def tournamentPage(request, tid):
             "already_registered": already_registered,
             "user_teams": user_teams,
             "format": format,
-            "is_bracket": is_bracket
+            "is_bracket": is_bracket,
+            "user_info": userInfo
         },
     )
 
