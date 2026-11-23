@@ -142,3 +142,85 @@ fieldset:has(#id_participants) {
   padding: 0;
   border-radius: 15px;
 }
+
+/*User Profile*/
+#user-profile {
+  padding: 40px;
+  margin: 50px;
+  border: 3px solid black;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 18px;
+}
+
+#user-profile > div {
+  border: 2px solid turquoise;
+  margin: 40px 0;
+  padding: 20px 0 120px;
+}
+
+#user-profile .banner {
+  width: fit-content;
+  position: relative;
+  font-size: 24px;
+  font-weight:bold;
+  top: -2em;
+  left: 1em;
+  padding: 10px 30px;
+  background-color: white;
+  border: 2px solid turquoise;
+  border-radius: 10px;
+}
+
+#user-profile .content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  height: 150px;
+}
+#user-profile > .user-options {
+  border: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding-bottom: 20px;
+}
+
+#user-profile > .user-options a{
+  text-decoration: none;
+  color: white;
+}
+
+.details-block {
+  width: 30%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid turquoise;
+}
+
+.details-block:nth-child(3) {
+  border: none;
+}
+
+
+.details-block > span{
+  font-size: 20px;
+  margin: 20px;
+}
+
+.details-block > span:first-child{
+  font-size: 24px;
+  font-weight: bold;
+}
+.team-info {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+.team-info > div {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}

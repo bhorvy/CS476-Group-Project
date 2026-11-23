@@ -11,7 +11,7 @@ Purpose: Code for user profile page
 
 {% block content %}
 
-  <h1>User Profile</h1>
+  <h1>{{ user.username }}'s Profile</h1>
 
   {% if messages %}
     {% for message in messages %}
@@ -19,34 +19,72 @@ Purpose: Code for user profile page
     {% endfor %}
   {% endif %}
 
-  <p>Username: {{ user.username }}</p>
   {% if member %}
-    <p>Full Name: {{ member.firstname }} {{ member.lastname }}</p>
-    <p>Gender: {{ member.get_gender_display }}</p>
-    <p>Date of Birth: {{ member.DOB }}</p>
-    <p>Teams you lead:
-      {% for team in member.led_teams.all %}
-        {{ team.name }}{% if not forloop.last %}, {% endif %}
-      {% empty %}
-        none
-      {% endfor %}
-    </p>
-    <p>Teams you are on:
-      {% for team in member.teams.all %}
-        {{ team.name }}{% if not forloop.last %}, {% endif %}
-      {% empty %}
-        none
-      {% endfor %}
-    </p>
-    <p>Game accounts:
-      {% for account in member.game_accounts.all %}
-        {{ account.game_title }} ({{ account.game_username }}){% if not forloop.last %}, {% endif %}
-      {% empty %}
-        none
-      {% endfor %}
-    </p>
-     <button><a href="{% url 'editProfile' %}">Edit profile</a></button>
-     <p><a href="{% url 'gameAccount' %}">Add game account</a></p>
+  <div id="user-profile">
+    <div class="user-details">
+      <div class="banner"><span>Details</span></div>
+      <div class="content">
+        <div class="details-block">
+          <span><b>Full Name</b></span>
+          <span>{{ member.firstname }} {{ member.lastname }}</span>
+        </div>
+        <div class="details-block">
+          <span>Gender</span>
+          <span>{{ member.get_gender_display }}</span>          
+        </div>
+        <div class="details-block">
+          <span>Date of Birth</span>
+          <span>{{ member.DOB }}</span>           
+        </div>    
+      </div>
+    </div>
+    <div class="user-teams">
+      <div class="banner"><span>Teams</span></div>
+      <div class="content">
+        <div class="team-info">
+          <div class="details-block">
+            <span>Teams Joined</span>
+            {% for team in member.teams.all %}
+              <span>{{ team.name }}</span>
+            {% empty %}
+              <span>No teams joined.</span>
+            {% endfor %}
+            
+          </div>
+          <div class="details-block">
+            <span>Teams Led</span>
+            {% for team in member.led_teams.all %}
+              <span><b>-</b>{{ team.name }}</span>
+            {% empty %}
+              <span>No teams leading.</span>
+            {% endfor %}
+          </div>
+        </div>
+        
+        
+      </div>
+      
+    </div>
+    <div class="user-game-accounts">
+      <div class="banner"><span>Game Account Info</span></div>
+      <div class="content">
+        <p>Game accounts:
+          {% for account in member.game_accounts.all %}
+            {{ account.game_title }} ({{ account.game_username }}){% if not forloop.last %}, {% endif %}
+          {% empty %}
+            none
+          {% endfor %}
+        </p>
+      </div>
+      
+    </div>
+    <div class="user-options">
+      <button><a href="{% url 'editProfile' %}">Edit profile</a></button>
+      <button><a href="{% url 'gameAccount' %}">Add game account</a></button>
+    </div>
+     
+  </div>
+    
   {% else %}
     <p>No member profile is attached to this account.</p>
   {% endif %}
