@@ -61,7 +61,6 @@ Purpose: Styling for tournament instances
     padding: 1px 5px;
 }
 
-/* Styling for player block */
 .player-block > span{
     display: block;
 }
@@ -142,4 +141,11 @@ Purpose: Styling for tournament instances
 /* Styling for score popup form */
 #score-popup form{
     margin: 0
+}
+
+#score-popup form > div {
+    width: 100%;
+}
+#score-popup input[type="checkbox"] {
+    height: 20px;
 }

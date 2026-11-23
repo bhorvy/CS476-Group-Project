@@ -85,37 +85,60 @@ text-align:center;
 
 /* Styling for forms */
 form {
-border-radius: 10px;
-border-color: black;
-border-style:solid;
-background-color: white;
-color: black;
-text-align:left;
-margin-left:400px;
-margin-right: 400px;
-box-shadow: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 10px;
+  border-color: black;
+  border-style:solid;
+  background-color: white;
+  color: black;
+  text-align:left;
+  max-width: 500px;
+  margin:auto;
+  padding: 20px;
+  box-shadow: 10px 10px;
 }
 
 /* Styling for input features */
-input {
-    width:100px;
+form > div {
+    min-width: 100px;
+    width: 50%;
     margin: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Styling for buttons */
-button {
+/* Default styling for buttons and form submit */
+button, [type = "submit"] {
     border-radius: 10px;
     background-image: linear-gradient(to top, teal, turquoise);
+    padding: 10px 20px;
     color: white;
     border:none;
     font-weight:bold;
 }
 
-/* Styling for submit button */
-[type = "submit"] {
-    border-radius: 10px;
-    background-image: linear-gradient(to top, teal, turquoise);
-    color: white;
-    border:none;
-    font-weight:bold;
+fieldset > div {
+  margin: 10px;
+}
+
+/********* Form-specific styling  **********/
+/* Manage Tournament */
+fieldset:has(#id_participants) {
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+#id_participants > div {
+  margin: 10px;
+}
+
+/* Tournament List */
+#tournament-list form {
+  position: fixed;
+  top: 50px;
+  right: 50px;
+  padding: 0;
+  border-radius: 15px;
 }

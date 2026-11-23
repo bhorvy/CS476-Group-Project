@@ -20,7 +20,7 @@ Purpose: Code for editing user profile
 
   <form method="post" action="{% url 'editProfile' %}">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form }}
     <button type="submit">Save changes</button>
   </form>
 
