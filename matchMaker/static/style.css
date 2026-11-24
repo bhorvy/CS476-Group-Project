@@ -95,6 +95,18 @@ form > div {
     flex-direction: column;
 }
 
+form > p {
+    min-width: 100px;
+    width: 50%;
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+p[hidden] {
+  display: none;
+}
+
 /* Default styling for buttons and form submit */
 button, [type = "submit"] {
     border-radius: 10px;
