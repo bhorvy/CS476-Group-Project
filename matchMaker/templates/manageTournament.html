@@ -83,5 +83,28 @@ Purpose: Code for the tournament management page
     minRankSelect.value = savedMinRank;
     maxRankSelect.value = savedMaxRank;
   </script>
+  
+  {% if match_choices %}
+    <h2>Submit Score</h2>
+    <select id="pick_match">
+      {% for choice in match_choices %}
+        <option value="{{ choice.value }}">{{ choice.label }}</option>
+      {% endfor %}
+    </select>
+    <button onclick="adminScoreSubmission()">Submit Score</button>
+    <div id="score_popup"></div>
+
+    <script>
+        //function used to open the submit score popup for the match admin has selected 
+        async function adminScoreSubmission(){
+            const selectedMatch= document.getElementById('pick_match').value;
+            const response= await fetch("/score-popup?"+selectedMatch);
+            const data= await response.text();
+            document.getElementById('score_popup').innerHTML=data;
+            const scoreForm=document.getElementById('score_popup').querySelector('form');
+            scoreForm.action= "/tournament/{{ tournament.id }}/";
+        }
+    </script>
+    {% endif %}
 
 {% endblock %}

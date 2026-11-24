@@ -499,6 +499,27 @@ def scorePopup(request):
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'), 
                                    is_bracket=request.GET.get('is_bracket'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
+ 
+#listing all the matches in the backet for admit to edit it
+def _list_matches(tournament):
+    choices= []
+    layout=tournament.layout
+    #two bracket for double elimination
+    if tournament.format=="DOUBLE_ELIM":
+        upper=layout["bracket"]["upper_bracket"]
+        lower=layout["bracket"]["lower_bracket"]
+    else:
+        upper=layout["bracket"]
+        lower=[]
+    #adding every match to list from upper bracket.
+    for round_id in range(len(upper)):
+        for match_id in range(len(upper[round_id])):
+            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=True","label": f"Round {round_id + 1}, Match {match_id + 1}"})
+    #adding every match to list from lower bracket.
+    for round_id in range(len(lower)):
+        for match_id in range(len(lower[round_id])):
+            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"Lower round {round_id + 1}, Match {match_id + 1}"})
+    return choices
 
 # Renders the tournament management page for an administrator.
 @login_required
@@ -593,7 +614,7 @@ def manageTournament(request, tid):
             form.initial["min_rank"] = tournament.min_rank
             form.initial["max_rank"] = tournament.max_rank
     # reusing the registation html file as it's just displaying a form. 
-    return render(request, 'manageTournament.html', {'form': form})
+    return render(request, 'manageTournament.html', {'form': form,'tournament':tournament,'match_choices':_list_matches(tournament)})
 
 # View for the list of tournaments.
 @never_cache
