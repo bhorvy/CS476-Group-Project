@@ -18,6 +18,6 @@ class BannedUserMiddleware:
             member=getattr(request.user,"member",None)
             if member and member.is_banned:
                 logout(request)
-                message.error(request,f"your account was banned.reason:{memeber.ban_reason}")
+                messages.error(request,f"your account was banned.reason:{member.ban_reason}")
                 return redirect("loginPage")
         return self.get_response(request)

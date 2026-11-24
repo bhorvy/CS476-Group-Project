@@ -43,6 +43,13 @@ Purpose: Code for tournament page
             {{ tournament.object.get_entry_type_display }} tournament —
             {{ tournament.object.current_participants }}/{{ tournament.object.max_participants }} registered
             </p>
+            {% if tournament.object.min_rank or tournament.object.max_rank %}
+                <p>
+                    Rank requirement:
+                    {{ minimum_rank_label|default:"No minimum" }} -
+                    {{ maximum_rank_label|default:"No maximum" }}
+                </p>
+            {% endif %}
             {% if registrations %}
             <!--
                 <ul>

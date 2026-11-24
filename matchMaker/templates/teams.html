@@ -8,7 +8,9 @@ Purpose: Code for viewing team page
 -->
 
 {% extends 'pageSkeleton.html' %}
+{% load static %}
 {% block content %}
+  <link rel="stylesheet" href="{% static 'tournament_list.css' %}?v=teams">
   <h1>Teams</h1>
   {% if messages %}
     {% for message in messages %}
@@ -16,43 +18,58 @@ Purpose: Code for viewing team page
     {% endfor %}
   {% endif %}
 
+  <div id="team-list">
+    <div id="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>Tag</th>
+            <th>Leader</th>
+            <th>Members</th>
+            {% if user.is_authenticated %}
+              <th></th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for team in teams %}
+            <tr>
+              <td><a href="{% url 'teamDetail' team.id %}">{{ team.name }}</a></td>
+              <td>{% if team.tag %}{{ team.tag }}{% else %}—{% endif %}</td>
+              <td>{{ team.leader.user.username }}</td>
+              <td>{{ team.members.count }}</td>
+              {% if user.is_authenticated %}
+                <td>
+                  {% if member and member in team.members.all %}
+                    <span class="team-status">On this team</span>
+                  {% else %}
+                    <form method="post" action="{% url 'joinTeam' team.id %}">
+                      {% csrf_token %}
+                      <button type="submit">Join</button>
+                    </form>
+                  {% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="{% if user.is_authenticated %}5{% else %}4{% endif %}">No teams yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   {% if user.is_authenticated %}
     <h2>Create a team</h2>
-    <form method="post" action="{% url 'teamPage' %}">
+    <form id="create-team" method="post" action="{% url 'teamPage' %}">
       {% csrf_token %}
       {{ form }}
       <input type="submit" value="Create team">
     </form>
   {% else %}
     <p><a href="{% url 'loginPage' %}">Log in</a> to create or join a team.</p>
-  {% endif %}
-
-  <h2>All teams</h2>
-  {% if teams %}
-    {% for team in teams %}
-      <div>
-        <h3>{{ team.name }}{% if team.tag %} ({{ team.tag }}){% endif %}</h3>
-        <p>Leader: {{ team.leader.user.username }}</p>
-        <p>Members:
-          {% for teammate in team.members.all %}
-            {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
-          {% empty %}
-            none
-          {% endfor %}
-        </p>
-        {% if user.is_authenticated %}
-          {% if member and member in team.members.all %}
-            <p>You are on this team.</p>
-          {% else %}
-            <form method="post" action="{% url 'joinTeam' team.id %}">
-              {% csrf_token %}
-              <button type="submit">Join</button>
-            </form>
-          {% endif %}
-        {% endif %}
-      </div>
-    {% endfor %}
-  {% else %}
-    <p>No teams yet.</p>
   {% endif %}
 {% endblock %}

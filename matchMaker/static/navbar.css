@@ -44,8 +44,10 @@ Purpose: Styling for navigation bar
 
 /* Styling for images */
 #navbar svg {
+    display: block;
     width: 50%;
     height: 50%;
+    margin: 0 auto;
     fill: white;
 }
 
