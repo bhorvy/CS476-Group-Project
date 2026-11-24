@@ -22,7 +22,7 @@ Purpose: Styling for tournament instances
     flex-direction: column;
 }
 
-#tournament-bracket > * {
+#tournament-bracket > div {
     background-color: white;
     padding: 40px;
     margin: 20px;
@@ -72,10 +72,6 @@ Purpose: Styling for tournament instances
     margin: 0 30px;
 }
 
-.pool > * {
-    padding: 5px 10px;
-}
-
 .pool > .pool-name{
     display: block;
     text-align: center;
@@ -84,9 +80,25 @@ Purpose: Styling for tournament instances
     color: black;
 }
 
-.pool > .player-block{
+.pool .player-block{
     border-left: none;
     border-right: none;
+}
+
+.matches {
+    display:flex;
+    flex-direction: row;
+}
+
+.matches > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    width: fit-content;
+}
+
+.matches .player-block > span:first-child {
+    margin-right: 2em;
 }
 
 /* Styling for score popup */
