@@ -7,6 +7,7 @@ import os
 import requests
 from .helpers import LEAGUE_UPPER_TIER_VALUES, RIOT_PLATFORM_ROUTING, league_rank_value, rank_label_for_value
 
+#https://docs.python.org/3/tutorial/errors.html
 class RankLookupError(Exception):
     pass
 

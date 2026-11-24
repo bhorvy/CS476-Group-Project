@@ -107,6 +107,10 @@ p[hidden] {
   display: none;
 }
 
+div[hidden] {
+  display: none;
+}
+
 /* Default styling for buttons and form submit */
 button, [type = "submit"] {
     border-radius: 10px;
