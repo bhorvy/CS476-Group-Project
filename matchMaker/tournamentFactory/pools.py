@@ -42,12 +42,13 @@ class Pools(AbstractTournament):
     def handleWinner(self, roundId, matchId, winnerId, isBracket):
         data = self.layout
         bracketName = "bracket" if isBracket else "pools"
-        #Check if it is the finals. If so, only handle the winner's id.
+        #Check if it is the finals. If so, handle winner id and set that winner as the champion.
         if(isBracket):
             if (roundId + 1) == len(data[bracketName]):
                 data[bracketName][roundId][matchId]["winner_id"] = winnerId
                 self.object.layout = data
                 self.object.save()
+                self.handleChampion(winnerId)
                 return
             nextRoundMatchIndex = math.floor(matchId / 2)
             playerSlotIndex = 0 if matchId % 2 == 0 else 1
@@ -127,5 +128,27 @@ class Pools(AbstractTournament):
                 complete = False
         return complete
 
+    def isAllPoolsFinished(self):
+        bracketPlayerCount = 0
+        #Get a count of all the players placed in the bracket currently. If that count equals
+        #   double the amount of pools (related to the amount of people who can get out of a pool),
+        #   then every pool is done.
+        for i in range(len(self.layout["bracket"][0])):
+            if(self.layout["bracket"][0]["players"][0]["player_id"] > 0):
+                bracketPlayerCount += 1
+            if(self.layout["bracket"][0]["players"][1]["player_id"] > 0):
+                bracketPlayerCount += 1
+        if(len(self.layout["pools"] * 2) == bracketPlayerCount):
+            return True
+        return False
 
+    def handleByes(self):
+        pools = self.layout["pools"]
+        for i in range(len(pools)):
+            for j in range(len(pools[i])):
+                if(pools[i][j]["players"][0]["player_id"] == 0):
+                    self.handleWinner(i, j, pools[i][j]["players"][1]["player_id"], False)
+                elif(pools[i][j]["players"][1]["player_id"] == 0):
+                    self.handleWinner(i, j, pools[i][j]["players"][0]["player_id"], False)
+        self.object.save()
 

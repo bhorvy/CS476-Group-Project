@@ -6,7 +6,7 @@
 from ..models import Tournament
 from .abstractTournament import AbstractTournament
 import math
-
+import pdb
 class SingleElimination(AbstractTournament):
 
     def getBracket(self):
@@ -40,9 +40,10 @@ class SingleElimination(AbstractTournament):
             data["bracket"][roundId][matchId]["winner_id"] = winnerId
             self.object.layout = data
             self.object.save()
+            self.handleChampion(winnerId)
             return
-        nextRoundMatchIndex = math.ceil(matchId / 2) - 1
-        playerSlotIndex = 0 if matchId % 2 == 1 else 1
+        nextRoundMatchIndex = math.ceil((matchId + 1) / 2) - 1
+        playerSlotIndex = (matchId % 2)
         # Update the layout with the winner of the match in the next round's specific player slot
         data["bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
 
@@ -81,6 +82,15 @@ class SingleElimination(AbstractTournament):
         self.object.layout = self.layout
         self.object.save()
         return
+
+    def handleByes(self):
+        matchPos = self.object.layout["bracket"][0]
+        for i in range(len(matchPos)):
+            if(matchPos[i]["players"][0]["player_id"] == 0):
+                self.handleWinner(0, i, matchPos[i]["players"][1]["player_id"])
+            elif(matchPos[i]["players"][1]["player_id"] == 0):
+                self.handleWinner(0, i, matchPos[i]["players"][0]["player_id"])
+        self.object.save()
 
 
 
