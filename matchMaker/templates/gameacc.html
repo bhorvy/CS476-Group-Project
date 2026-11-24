@@ -54,6 +54,7 @@ Template for django forms was used and can be found here: https://docs.djangopro
     </p>
     <input type="submit" value="Save">
   </form>
+  <p><a href="{% url 'profilePage' %}">Cancel</a></p>
 
   <!-- pass JSON help data -->
   {{ game_help|json_script:"game-help" }}
