@@ -20,7 +20,9 @@ class TournamentCreate:
         numPlayers = len(players)
         # Find the next power of 2 greater than or equal to numPlayers.
         # If numPlayers is 17, 15 bye slots will have to be filled as 32 is the next power.
-        nextPowerOf2 = 1 << (numPlayers - 1).bit_length()
+        # At least 2 slots so there is always a match, even with one player.
+        # When creating a tournament with one member, we crashed
+        nextPowerOf2 = max(2, 1 << (numPlayers - 1).bit_length())
         # Create a list of players with 0 for byes
         bracketPlayers = players + [0] * (nextPowerOf2 - numPlayers)
         # Shuffle the players to randomize the bracket

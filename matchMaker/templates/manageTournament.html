@@ -32,5 +32,56 @@ Purpose: Code for the tournament management page
       
 
   </form>
+  <!-- https://www.w3schools.com/django/ref_filters_json_script.php
+   pass in JSON data for rank options by game -->
+{{ form.rank_options_by_game|json_script:"rank-options" }}
+{{ form.min_rank.value|json_script:"saved-min-rank" }}
+{{ form.max_rank.value|json_script:"saved-max-rank" }}
+  <script>
+    // Update the rank fields based on the selected game title
+    const gameSelect = document.getElementById("id_game_title");
+    const otherGameField = document.getElementById("id_other_game_title").closest("div");
+    const minRankField = document.getElementById("id_min_rank").closest("div");
+    const maxRankField = document.getElementById("id_max_rank").closest("div");
+    const minRankSelect = document.getElementById("id_min_rank");
+    const maxRankSelect = document.getElementById("id_max_rank");
+    const ranksByGame = JSON.parse(document.getElementById("rank-options").textContent);
+    const savedMinRank = JSON.parse(document.getElementById("saved-min-rank").textContent) || "";
+    const savedMaxRank = JSON.parse(document.getElementById("saved-max-rank").textContent) || "";
+
+    function fillRankSelect(select, ranks, emptyLabel) {
+      //reset the select options
+      select.innerHTML = "";
+      //add the empty option first
+      select.add(new Option(emptyLabel, ""));
+      //add the rank options
+      for (const [value, label] of ranks) {
+        select.add(new Option(label, value));
+      }
+    }
+
+    function updateRankFields() {
+      //get ranks for selected game
+      const ranks = ranksByGame[gameSelect.value];
+      //hide certain fields based on the selected game
+      otherGameField.hidden = gameSelect.value !== "OTHER";
+      minRankField.hidden = gameSelect.value === "OTHER";
+      maxRankField.hidden = gameSelect.value === "OTHER";
+      //fill the rank  dropdowns with their ranks
+      fillRankSelect(minRankSelect, ranks, "No minimum");
+      fillRankSelect(maxRankSelect, ranks, "No maximum");
+    }
+
+    gameSelect.addEventListener("change", function () {
+      minRankSelect.value = "";
+      maxRankSelect.value = "";
+      updateRankFields();
+    });
+
+    updateRankFields();
+    // keep the submitted or saved ranks selected after the options are filled
+    minRankSelect.value = savedMinRank;
+    maxRankSelect.value = savedMaxRank;
+  </script>
 
 {% endblock %}

@@ -19,16 +19,19 @@ from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime
 
-from .models import Member, Tournament, TournamentRegistration, Team
+from .models import GameAccount, Member, Tournament, TournamentRegistration, Team, TournamentNotification, BanError
 from .forms import RegisterForm, LoginForm, GameLinkForm, TournamentCreation, ScoreSubmissionForm, ManageTournament, CreateTeamForm, MemberProfileForm
 from .tournamentFactory.singleElim import SingleElimination
 from .tournamentFactory.doubleElim import DoubleElimination
 from .tournamentFactory.pools import Pools
 from .tournamentFactory.tournamentCreate import TournamentCreate
 from .observers.bracketUpdateSubject import notify_tournament_updated
-from .models import TournamentNotification,BanError
 from functools import wraps
 from django.views.decorators.http import require_POST
+from .ranks.lookup import RankLookupError, fetch_game_rank
+from .ranks.helpers import GAME_ACCOUNT_HELP, SUPPORTED_RANKED_GAMES, rank_label_for_value
+from .ranks.eligibility import rank_eligibility_errors
+
 
 # render demo page
 def matchMaker(request):
@@ -105,21 +108,60 @@ def gameAccount(request):
         form = GameLinkForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            gameAccount.objects.update_or_create(
+            account, created = GameAccount.objects.get_or_create(
                 member=member,
                 game_title=data["game_title"],
                 defaults={
                     "game_username": data["game_username"],
+                    "game_tag": data["game_tag"],
                     "external_player_id": data["external_player_id"],
                 },
             )
+            if not created:
+                # Reset rank if game account changed
+                update_fields = ["game_username", "game_tag", "external_player_id"]
+                if (account.game_username != data["game_username"] or account.game_tag != data["game_tag"] or account.external_player_id != data["external_player_id"]):
+                    account.rank_or_elo = None
+                    account.rank_value = None
+                    update_fields.extend(["rank_or_elo", "rank_value"])
+                account.game_username = data["game_username"]
+                account.game_tag = data["game_tag"]
+                account.external_player_id = data["external_player_id"]
+                account.save(update_fields=update_fields)
             messages.success(request, f"Saved {data['game_title']} account.")
             return HttpResponseRedirect("/gameAccount/")
     else:
         form = GameLinkForm()
 
     accounts = member.game_accounts.all()
-    return render(request, "gameacc.html", {"form": form, "accounts": accounts})
+    return render(request, "gameacc.html", {"form": form, "accounts": accounts, "game_help": GAME_ACCOUNT_HELP, "ranked_games": SUPPORTED_RANKED_GAMES})
+
+#sync game rank with specified game title
+@login_required
+def syncGameRank(request, account_id):
+    member = _member_or_none(request.user)
+    if not member:
+        messages.error(request, "Your account has no member profile.")
+        return HttpResponseRedirect("/gameAccount/")
+
+    account = get_object_or_404(member.game_accounts, pk=account_id)
+    try:
+        rank_result = fetch_game_rank(
+            account.game_title,
+            account.game_username,
+            account.external_player_id,
+            account.game_tag,
+        )
+    except RankLookupError as error:
+        messages.error(request, str(error))
+    else:
+        display, value = rank_result
+        account.rank_or_elo = display
+        account.rank_value = value
+        account.save(update_fields=["rank_or_elo", "rank_value", "last_synced"])
+        messages.success(request, f"Updated {account.game_title} rank: {display}.",)
+    return HttpResponseRedirect("/gameAccount/")
+
 
 # render tournament roster
 def _sync_tournament_roster(tournament):
@@ -268,7 +310,9 @@ def tournamentPage(request, tid):
             or registrations.filter(team__members=member).exists()
         )
         user_teams = member.led_teams.all()
-    
+    # Get the minimum and maximum rank labels for display.
+    minimum_rank_label = rank_label_for_value(tournament.object.game_title, tournament.object.min_rank)
+    maximum_rank_label = rank_label_for_value(tournament.object.game_title, tournament.object.max_rank)
     return render(
         request,
         "tournament.html",
@@ -282,7 +326,9 @@ def tournamentPage(request, tid):
             "user_teams": user_teams,
             "format": format,
             "is_bracket": is_bracket,
-            "user_info": userInfo
+            "user_info": userInfo,
+            "minimum_rank_label": minimum_rank_label,
+            "maximum_rank_label": maximum_rank_label,
         },
     )
 
@@ -330,6 +376,17 @@ def registerForTournament(request, tid):
         if TournamentRegistration.objects.filter(tournament=tournament, member__in=team.members.all()).exists():
             messages.error(request, "A member of this team is already registered.")
             return HttpResponseRedirect(f"/tournament/{tid}/")
+
+    if team:
+        registering_members = team.members.select_related("user").all()
+    else:
+        registering_members = [member]
+
+    # Check all members meet rank eligibility constraints
+    eligibility_errors = rank_eligibility_errors(registering_members, tournament)
+    if eligibility_errors:
+        messages.error(request, " ".join(eligibility_errors))
+        return HttpResponseRedirect(f"/tournament/{tid}/")
 
     if TournamentRegistration.objects.filter(tournament=tournament).count() >= tournament.max_participants:
         messages.error(request, "This tournament is full.")
@@ -469,36 +526,52 @@ def manageTournament(request, tid):
                 #If those buttons were not press, the submit button was pressed instead.
                 #Handle the form as a result.
                 data = form.cleaned_data
-                tournament.name=data["tournament_name"]
-                tournament.description=data["description"]
-                tournament.game_title = data["game_title"]
-                tournament.entry_type = data["entry_type"]
-                tournament.format = data["format"]
-                tournament.min_rank = data["min_rank"]
-                tournament.max_rank = data["max_rank"]
-                tournament.max_participants = data["max_participants"]
-                tournament.start_date = data["start_date"]
-
+                
                 #If any participants were added, they will also need to be synced to the TournamentRegistration model,
                 #   and any related values need to be updated like participant count.
                 participants= data["participants"]
-                if len(participants) <= tournament.max_participants:
-                    player_ids = list(participants.values_list('id', flat=True))
-                    tournament.layout = TournamentCreate(tournament.name, tournament.description, 
-                                                         player_ids, tournament.game_title, tournament.format).layout
-                    for i in range(len(participants)):
-                        if (not (TournamentRegistration.objects.filter(member=participants[i], tournament=tournament))):
-                            registration = TournamentRegistration.objects.create(
-                                tournament=tournament, member=participants[i], status="ACCEPTED")
-                            registration.save()
-                    tournament.current_participants = len(participants)
+                if participants.count() > data["max_participants"]:
+                    form.add_error("participants", "The selected participants exceed the tournament capacity.")
+                else:
+                    # Set rank constraints based on selected game
+                    tournament.game_title = data["game_title"]
+                    tournament.min_rank = data["min_rank"]
+                    tournament.max_rank = data["max_rank"]
 
-                tournament.save()
-                #Let the tournament participants know that the bracket is updated.
-                notify_tournament_updated(tournament, tournament.participants.all(),
-                                           f"The tournament bracket for {tournament.name} was updated.")
-            # redirect to the newly updated tournament's URL:
-            return HttpResponseRedirect(f'/tournament/{tournament.id}/')
+                    # Verify all participants meet rank eligibility
+                    eligibility_errors = rank_eligibility_errors(participants, tournament)
+                    if eligibility_errors:
+                        form.add_error("participants", " ".join(eligibility_errors))
+                    else:
+                        # Update tournament details and bracket
+                        tournament.name = data["tournament_name"]
+                        tournament.description = data["description"]
+                        tournament.entry_type = data["entry_type"]
+                        tournament.format = data["format"]
+                        tournament.max_participants = data["max_participants"]
+                        tournament.start_date = data["start_date"]
+
+
+                        player_ids = list(participants.values_list('id', flat=True))
+                        tournament.layout = TournamentCreate(tournament.name, tournament.description,
+                                                             player_ids, tournament.game_title, tournament.format).layout
+                        for participant in participants:
+                            if not TournamentRegistration.objects.filter(member=participant, tournament=tournament).exists():
+                                registration = TournamentRegistration.objects.create(
+                                    tournament=tournament, member=participant, status="ACCEPTED")
+                                registration.save()
+                                
+                        # remove registrations for players who were unselected
+                        TournamentRegistration.objects.filter(tournament=tournament).exclude(member__in=participants).delete()
+                        _sync_tournament_roster(tournament)
+                        tournament.current_participants = participants.count()
+                        tournament.save()
+                        #Let the tournament participants know that the bracket is updated.
+                        notify_tournament_updated(tournament, tournament.participants.all(),
+                                                  f"The tournament bracket for {tournament.name} was updated.")
+            # redirect to the newly updated tournament's URL, if no errors
+            if not form.errors:
+                return HttpResponseRedirect(f'/tournament/{tournament.id}/')
 
         # if a GET (or any other method) we'll get the tournamenet with its information
     else:
@@ -508,11 +581,17 @@ def manageTournament(request, tid):
             "game_title": tournament.game_title,
             "entry_type": tournament.entry_type,
             "max_participants": tournament.max_participants,
-            "min_rank": tournament.min_rank,
-            "max_rank": tournament.max_rank,
             "start_date": tournament.start_date,
             "participants": tournament.participants.all(),
             })
+        if tournament.game_title not in SUPPORTED_RANKED_GAMES:
+            form.initial["game_title"] = "OTHER"
+            form.initial["other_game_title"] = tournament.game_title
+            form.initial["min_rank"] = ""
+            form.initial["max_rank"] = ""
+        else:
+            form.initial["min_rank"] = tournament.min_rank
+            form.initial["max_rank"] = tournament.max_rank
     # reusing the registation html file as it's just displaying a form. 
     return render(request, 'manageTournament.html', {'form': form})
 

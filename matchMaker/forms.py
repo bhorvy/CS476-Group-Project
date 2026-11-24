@@ -12,7 +12,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Tournament, Member, Team 
-from django.utils import timezone
+from .ranks.helpers import GAME_TITLE_CHOICES, RANK_CHOICES, rank_choices_for_game
 
 # list of values for Gender option
 GENDER = {
@@ -60,9 +60,30 @@ class MemberProfileForm(forms.Form):
 
 # form for registering game accounts
 class GameLinkForm(forms.Form):
-    game_title = forms.CharField(max_length=100)
-    game_username = forms.CharField(max_length=100)
-    external_player_id = forms.CharField(max_length=100, required=False, label="Player ID (optional)") 
+    game_title = forms.ChoiceField(choices=GAME_TITLE_CHOICES, label="Game")
+    other_game_title = forms.CharField(max_length=100, required=False, label="Other game name")
+    game_username = forms.CharField(max_length=100, label="Game account name")
+    game_tag = forms.CharField(max_length=100, required=False, label="Riot tag")
+    external_player_id = forms.CharField(max_length=100, required=False, label="External player ID")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("game_title") in ("Valorant", "League of Legends"):
+            if not cleaned_data.get("game_tag"):
+                self.add_error("game_tag", "Enter your Riot tag.")
+            if "#" in cleaned_data.get("game_tag", ""):
+                self.add_error("game_tag", "Enter your tag without #.")
+        else:
+            cleaned_data["game_tag"] = ""
+        if cleaned_data.get("game_title") != "OTHER":
+            return cleaned_data
+        # Custom games require a name
+        if cleaned_data.get("other_game_title"):
+            cleaned_data["game_title"] = cleaned_data.get("other_game_title")
+        else:
+            self.add_error("other_game_title", "Enter the name of the game.")
+        cleaned_data["external_player_id"] = ""
+        return cleaned_data
 
 # flist of options for solo or team-based tournaments
 ENTRY_TYPE = {
@@ -74,15 +95,56 @@ FORMAT = {
     "DOUBLE_ELIM": "Double Elimination",
     "POOLS": "Pools"
 }
-class TournamentCreation(forms.Form):
+
+class TournamentRankFormBase(forms.Form):
+    # Base form for tournament rank constraints, shared by TournamentCreation and ManageTournament
+    rank_options_by_game = RANK_CHOICES
+
+    game_title = forms.ChoiceField(choices=GAME_TITLE_CHOICES, initial="Deadlock")
+    other_game_title = forms.CharField(max_length=100, required=False,)
+    min_rank = forms.CharField(required=False, widget=forms.Select)
+    max_rank = forms.CharField(required=False, widget=forms.Select)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        #check that if other that it has a title 
+        if cleaned_data.get("game_title") == "OTHER":
+            other_title = cleaned_data.get("other_game_title", "").strip()
+            if not other_title:
+                self.add_error("other_game_title", "Enter the name of the game.")
+            else:
+                cleaned_data["game_title"] = other_title
+            # other games don't need min or max rank
+            cleaned_data["min_rank"] = ""
+            cleaned_data["max_rank"] = ""
+        else:
+            #games with ranks do not need other game title
+            cleaned_data["other_game_title"] = ""
+
+        minimum = cleaned_data.get("min_rank")
+        maximum = cleaned_data.get("max_rank")
+        game_title = cleaned_data.get("game_title")
+        # data gets stored as value string, label string pairs and we use the ints for the data
+        valid_values = { value for value, _ in rank_choices_for_game(game_title)}
+        # check min and max rank validity
+        if minimum and minimum not in valid_values:
+            self.add_error("min_rank", "Choose a rank for this game.")
+        if maximum and maximum not in valid_values:
+            self.add_error("max_rank", "Choose a rank for this game.")
+        # check if min rank is greater than max 
+        if minimum and maximum and minimum in valid_values and maximum in valid_values:
+            if int(minimum) > int(maximum):
+                self.add_error("max_rank", "Maximum rank must be at least the minimum rank.")
+        return cleaned_data
+
+
+# append the rank form base to the start of the tournament creation
+class TournamentCreation(TournamentRankFormBase):
     tournament_name = forms.CharField(max_length=255)
     description = forms.CharField(max_length=255)
-    game_title = forms.CharField(max_length=255)
     entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
     format = forms.ChoiceField(widget=forms.Select, choices=FORMAT)
     max_participants = forms.IntegerField(max_value=16)
-    min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
-    max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
     start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))
 
 # form for submitting scores
@@ -108,8 +170,8 @@ class CreateTeamForm(forms.Form):
     name = forms.CharField(max_length=100)
     tag = forms.CharField(max_length=100, required=False)
 
-# form for managing tournament
-class ManageTournament(forms.Form):
+# form for managing tournament, append form base to top of manage tournament
+class ManageTournament(TournamentRankFormBase):
     participants = forms.ModelMultipleChoiceField(
         queryset=Member.objects.all(),
         required=False,
@@ -117,10 +179,7 @@ class ManageTournament(forms.Form):
     )
     tournament_name = forms.CharField(max_length=255)
     description = forms.CharField(max_length=255)
-    game_title = forms.CharField(max_length=255)
     entry_type = forms.ChoiceField(widget=forms.RadioSelect, choices=ENTRY_TYPE)
     format = forms.ChoiceField(widget=forms.Select, choices=FORMAT)
     max_participants = forms.IntegerField(max_value=16)
-    min_rank = forms.CharField(max_length=255) # change this once we implement game ranks 
-    max_rank = forms.CharField(max_length=255) # change this once we implement game ranks
     start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"))

@@ -21,6 +21,7 @@ urlpatterns = [
     path('profilePage/', views.profilePage, name='profilePage'),
     path('profilePage/edit/', views.editProfile, name='editProfile'),
     path('gameAccount/', views.gameAccount, name='gameAccount'),
+    path('gameAccount/<int:account_id>/sync-rank/', views.syncGameRank, name='syncGameRank'),
     path('create-tournament/', views.tournamentCreatePage, name='createTournament'),
     path('score-popup', views.scorePopup, name='scorePopup'),
     path('logout/', views.logoutHandler, name='logoutHandler'),

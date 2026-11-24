@@ -70,7 +70,7 @@ Purpose: Code for user profile page
       <div class="content">
         <p>Game accounts:
           {% for account in member.game_accounts.all %}
-            {{ account.game_title }} ({{ account.game_username }}){% if not forloop.last %}, {% endif %}
+            {{ account.game_title }} ({{ account.game_username }}{% if account.game_tag %}#{{ account.game_tag }}{% endif %}){% if not forloop.last %}, {% endif %}
           {% empty %}
             none
           {% endfor %}
