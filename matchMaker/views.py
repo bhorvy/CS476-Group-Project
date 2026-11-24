@@ -593,56 +593,23 @@ def joinTeam(request, team_id):
     messages.success(request, f"You joined {team.name}.")
     return HttpResponseRedirect("/team/")
 
-# render enable team page
 @never_cache
-def teamPage(request):
+def teamDetail(request, team_id):
+    team = get_object_or_404(
+        Team.objects.select_related("leader__user").prefetch_related("members__user"),
+        id=team_id,
+    )
     member = _member_or_none(request.user)
-    form = CreateTeamForm()
-    if request.method == "POST":
-        if not member:
-            messages.error(request, "Log in with a signup account to create a team.")
-            return HttpResponseRedirect("/team/")
-        form = CreateTeamForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data["name"]
-            if Team.objects.filter(name__iexact=name).exists():
-                messages.error(request, "A team with that name already exists.")
-            else:
-                team = Team.objects.create(
-                    name=name,
-                    tag=form.cleaned_data["tag"],
-                    leader=member,
-                )
-                team.members.add(member)
-                messages.success(request, f"Team {team.name} created.")
-                return HttpResponseRedirect("/team/")
-    teams = Team.objects.select_related("leader__user").prefetch_related("members__user").order_by("name")
+    already_on_team = bool(member and team.members.filter(pk=member.pk).exists())
     return render(
         request,
-        "teams.html",
+        "teamDetail.html",
         {
-            "form": form,
-            "teams": teams,
+            "team": team,
             "member": member,
+            "already_on_team": already_on_team,
         },
     )
-
-# enable join team
-@login_required
-def joinTeam(request, team_id):
-    team = get_object_or_404(Team, id=team_id)
-    if request.method != "POST":
-        return HttpResponseRedirect("/team/")
-    member = _member_or_none(request.user)
-    if not member:
-        messages.error(request, "Your account has no member profile, so you cannot join a team.")
-        return HttpResponseRedirect("/team/")
-    if team.members.filter(pk=member.pk).exists():
-        messages.success(request, f"You are already on {team.name}.")
-        return HttpResponseRedirect("/team/")
-    team.members.add(member)
-    messages.success(request, f"You joined {team.name}.")
-    return HttpResponseRedirect("/team/")
 
 # render send notifications
 @login_required

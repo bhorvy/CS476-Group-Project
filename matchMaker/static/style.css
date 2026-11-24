@@ -22,39 +22,25 @@ main {
   width: calc(100vw-115px);
 }
 
-/* Styling for heading */
+/* Shared rounded box around headings */
+h1, h2, h3, h4 {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 8px 20px;
+  text-align: center;
+  color: black;
+  background-color: white;
+  border: 2px solid turquoise;
+  border-radius: 12px;
+}
+
 h1 {
-color: black;
-text-align:center;
-font-size:50px;
-margin-left:500px;
-margin-right: 500px;
+  font-size: 50px;
 }
 
-/* Styling for heading */
-h2 {
-color: black;
-text-align:center;
-font-size:30px;
-margin-left:500px;
-margin-right: 500px;
-}
-
-/* Styling for heading */
-h3 {
-color: black;
-text-align:center;
-font-size:30px;
-margin-left:500px;
-margin-right: 500px;
-}
-
-/* Styling for heading */
-h4 {
-color: black;
-text-align:left;
-font-size:30px;
-margin-left:300px;
+h2, h3, h4 {
+  font-size: 30px;
 }
 
 /* Styling for paragraph */
@@ -191,6 +177,17 @@ fieldset:has(#id_participants) {
   color: white;
 }
 
+#user-profile > .user-options form {
+  display: inline-flex;
+  flex-direction: row;
+  border: none;
+  box-shadow: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  max-width: none;
+}
+
 .details-block {
   width: 30%;
   text-align: center;
@@ -223,4 +220,14 @@ fieldset:has(#id_participants) {
   display: flex;
   flex-direction: column;
   text-align: center;
+}
+
+#user-profile .content.members-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: auto;
+  gap: 10px;
+  padding-top: 0;
 }

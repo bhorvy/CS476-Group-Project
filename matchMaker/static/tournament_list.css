@@ -28,9 +28,26 @@ Purpose: Styling for tournament lists
 }
 
 /* Styling for table */
+#table-container > table th {
+    text-align: center;
+    padding: 12px 8px;
+    border-bottom: 2px solid turquoise;
+    background-color: white;
+}
+
 #table-container > table td {
     text-align: center;
-    padding: 10px 0;
+    padding: 10px 8px;
+}
+
+#table-container > table td a {
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#table-container > table td a:hover {
+    color: teal;
+    text-decoration: underline;
 }
 
 /* Styling for child background */
@@ -71,4 +88,46 @@ Purpose: Styling for tournament lists
 /* Styling for table pagination span*/
 .pagination span{
     margin: 0 10px;
+}
+
+/* Teams list: same table as tournaments, without filling the whole viewport */
+#team-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0 40px;
+}
+
+#team-list #table-container {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    border: 3px solid black;
+    border-radius: 5px;
+}
+
+/* Join buttons sit in the table, not as the large boxed forms used on login/create */
+#team-list #table-container form {
+    display: inline-flex;
+    flex-direction: row;
+    border: none;
+    box-shadow: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+
+#team-list #table-container button {
+    padding: 6px 16px;
+}
+
+#team-list .team-status {
+    color: teal;
+    font-weight: bold;
+}
+
+#create-team {
+    margin-bottom: 30px;
 }

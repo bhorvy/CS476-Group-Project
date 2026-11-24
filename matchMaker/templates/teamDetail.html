@@ -1,0 +1,66 @@
+<!--
+
+Class: CS 476
+Professor: Dr. Samira Sadaoui
+filename: teamDetail.html
+Purpose: Code for viewing one team's details
+
+-->
+
+{% extends 'pageSkeleton.html' %}
+{% load static %}
+{% block content %}
+  <link rel="stylesheet" href="{% static 'tournament_list.css' %}">
+  <h1>{{ team.name }}</h1>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+
+  <div id="user-profile">
+    <div class="user-details">
+      <div class="banner"><span>Details</span></div>
+      <div class="content">
+        <div class="details-block">
+          <span>Tag</span>
+          <span>{% if team.tag %}{{ team.tag }}{% else %}none{% endif %}</span>
+        </div>
+        <div class="details-block">
+          <span>Leader</span>
+          <span>{{ team.leader.user.username }}</span>
+        </div>
+        <div class="details-block">
+          <span>Created</span>
+          <span>{{ team.created_at|date:"M j, Y" }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="user-teams">
+      <div class="banner"><span>Members</span></div>
+      <div class="content members-list">
+        {% for teammate in team.members.all %}
+          <span>{{ teammate.user.username }}{% if teammate.id == team.leader_id %} (leader){% endif %}</span>
+        {% empty %}
+          <span>none</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% if user.is_authenticated %}
+      {% if already_on_team %}
+        <p>You are on this team.</p>
+      {% endif %}
+    {% else %}
+      <p><a href="{% url 'loginPage' %}">Log in</a> to join this team.</p>
+    {% endif %}
+    <div class="user-options">
+      {% if user.is_authenticated and not already_on_team %}
+        <form method="post" action="{% url 'joinTeam' team.id %}">
+          {% csrf_token %}
+          <button type="submit">Join</button>
+        </form>
+      {% endif %}
+      <button><a href="{% url 'teamPage' %}">Back to teams</a></button>
+    </div>
+  </div>
+{% endblock %}
