@@ -38,9 +38,23 @@ class AbstractTournament(ABC):
     def updateScore(self, roundId, matchId, score, isUpperBracket):
         pass
 
+    @abstractmethod
+    def handleByes(self):
+        pass
+
     def deleteTournament(self):
         self.object.delete()
-        
+
+    def startTournament(self):
+        self.object.status = "ONGOING"
+        self.handleByes()
+        self.object.save()
+
+    def handleChampion(self, uid):
+        self.object.winner_id = uid
+        self.status = "COMPLETED"
+        self.object.save()
+    
     def updateStatus(self, status):
         self.status = status
         self.object.save()

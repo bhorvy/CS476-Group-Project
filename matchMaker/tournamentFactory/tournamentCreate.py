@@ -3,8 +3,10 @@
 # filename: tournamentCreate.py
 # Purpose: Code for creating new tournament
 
+import math
 import random
 from ..models import Tournament
+import pdb
 
 class TournamentCreate:
     def __init__(self, name, description, players, gameName, format):
@@ -15,6 +17,9 @@ class TournamentCreate:
         self.layout = self.generateBracket(players)
         self.gameName = gameName
     def generateBracket(self, players):
+        playerList = players
+        # Shuffle the players to randomize the bracket
+        random.shuffle(playerList)
         # 1v1 brackets single elim correlate with length of bits cleanly (i.e. 16 players has 4 rounds),
         # Many of the lines of code are based on this fact.
         numPlayers = len(players)
@@ -24,9 +29,13 @@ class TournamentCreate:
         # When creating a tournament with one member, we crashed
         nextPowerOf2 = max(2, 1 << (numPlayers - 1).bit_length())
         # Create a list of players with 0 for byes
-        bracketPlayers = players + [0] * (nextPowerOf2 - numPlayers)
-        # Shuffle the players to randomize the bracket
-        random.shuffle(bracketPlayers)
+        if(self.format == "POOLS"):
+            if(numPlayers % 4 == 0 ):
+                bracketPlayers = playerList
+            else:
+                bracketPlayers = playerList + [0] * (4 - (numPlayers % 4))
+        else:
+            bracketPlayers = playerList + [0] * (nextPowerOf2 - numPlayers)
         # Create the initial bracket structure
         match self.format:
             case "SINGLE_ELIM":
@@ -43,7 +52,7 @@ class TournamentCreate:
             match = {
                 "players": [
                     {"player_id": players[i], "score": 0},
-                    {"player_id": players[i + 1], "score": 0}
+                    {"player_id": players[len(players)-1-i], "score": 0}
                 ],
                 "winner_id": 0
             }
@@ -100,7 +109,6 @@ class TournamentCreate:
 
         #Lower bracket function
         currentRound = upper_bracket[0]
-        print(currentRound)
         while len(currentRound) > 1:
             nextRound = []
             #Lower bracket requires 2 times looping the same round size for major and minor rounds
@@ -126,13 +134,15 @@ class TournamentCreate:
         bracket = []
         pools = []
         bracketSlots = (len(players) // 2 + 1) if len(players) % 2 == 1 else (len(players) // 2)
-        for i in range(0, len(players), 4):
-            pools.append(self.createPoolMatches(players[i:i + 4]))
+        for i in range(0, (len(players)//4)):
+            #Grab 3 players, and 1 bye if exists
+            pools.append(self.createPoolMatches([players[(i*3)], players[(i*3)+1], 
+                                                 players[(i*3)+2], players[(len(players)-i-1)]]))
 
         # Create the initial bracket structure
         while bracketSlots > 1:
             currentRound = []
-            for _ in range(bracketSlots // 2):
+            for _ in range(math.ceil(bracketSlots / 2)):
                 match = {
                     "players": [
                         {"player_id": 0, "score": 0},

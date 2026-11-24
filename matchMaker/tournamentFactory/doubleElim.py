@@ -74,6 +74,9 @@ class DoubleElimination(AbstractTournament):
                 else:
                     #If round is even, move the loser to the same side of the lower bracket.
                     (data["bracket"]["lower_bracket"][(roundId * 2) - 1][matchId]["players"][0]["player_id"]) = loserId
+            #Used to double-check the byes that got sent to the lower bracket.
+            if(roundId == 0):
+                self.handleLowerByes()
 
         else:
             #First round to second round layout is the same size so it does not follow typical elimination standards.
@@ -85,7 +88,7 @@ class DoubleElimination(AbstractTournament):
                 nextRoundMatchIndex = math.ceil((matchId + 1) / 2) - 1
                 playerSlotIndex = (matchId % 2)
                 data["bracket"]["lower_bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
-                    
+
         #Update the winner_id field of the completed match to denote it is completed.
         data["bracket"][bracketName][roundId][matchId]["winner_id"] = winnerId
         
@@ -123,5 +126,20 @@ class DoubleElimination(AbstractTournament):
         self.object.save()
         return
 
+    def handleByes(self):
+        upperPos = self.object.layout["bracket"]["upper_bracket"][0]
+        for i in range(len(upperPos)):
+            if(upperPos[i]["players"][0]["player_id"] == 0):
+                self.handleWinner(0, i, upperPos[i]["players"][1]["player_id"], True)
+            elif(upperPos[i]["players"][1]["player_id"] == 0):
+                self.handleWinner(0, i, upperPos[i]["players"][0]["player_id"], True)
+        self.object.save()
 
-
+    def handleLowerByes(self):
+        lowerPos = self.object.layout["bracket"]["lower_bracket"][0]
+        for i in range(len(lowerPos)):
+            if(lowerPos[i]["players"][0]["player_id"] == 0):
+                self.handleWinner(0, i, lowerPos[i]["players"][1]["player_id"], False)
+            elif(lowerPos[i]["players"][1]["player_id"] == 0):
+                self.handleWinner(0, i, lowerPos[i]["players"][0]["player_id"], False)
+        self.object.save()

@@ -278,7 +278,6 @@ def tournamentPage(request, tid):
     userInfo = {}
     for i in userList:
         userInfo[i.member.id] = i.member.user.username
-    print(userInfo)
     if member:
         userPos = tournament.findUserInBracket(member.id)
         if userPos is not None:
@@ -513,15 +512,22 @@ def manageTournament(request, tid):
             # create a form instance and populate it with data from the request:
             form = ManageTournament(request.POST)
             if form.is_valid():
+                format = tournament.format
                 #Check if the tournament deletion or tournament initiation buttons
                 #   were pressed and handle their actions.
+                match format:
+                    case "SINGLE_ELIM":
+                        tournamentType = SingleElimination(tid)
+                    case "DOUBLE_ELIM":
+                        tournamentType = DoubleElimination(tid)
+                    case "POOLS":
+                        tournamentType = Pools(tid)
                 action = request.POST.get("action")
                 if(action == "delete_tournament"):
-                    tournament.delete()
-                    return HttpResponseRedirect('/tournament/')
+                    tournamentType.deleteTournament()
+                    return HttpResponseRedirect(f'/tournament/') 
                 elif(action == "start_tournament"):
-                    tournament.status = "ONGOING"
-                    tournament.save()
+                    tournamentType.startTournament()
                     return HttpResponseRedirect(f'/tournament/{tournament.id}/')
                 #If those buttons were not press, the submit button was pressed instead.
                 #Handle the form as a result.
