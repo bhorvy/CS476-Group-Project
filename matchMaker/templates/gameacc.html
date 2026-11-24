@@ -24,34 +24,34 @@ Template for django forms was used and can be found here: https://docs.djangopro
     <!-- 
     https://www.w3schools.com/django/ref_filters_json_script.php
     map these forms explicitly as they change depending on the game selected -->
-    <p>
+    <div>
       {{ form.game_title.label_tag }}
       {{ form.game_title }}
       {{ form.game_title.errors }}
-    </p>
-    <p hidden>
+    </div>
+    <div hidden>
       {{ form.other_game_title.label_tag }}
       {{ form.other_game_title }}
       {{ form.other_game_title.errors }}
-    </p>
-    <p>
+    </div>
+    <div>
       {{ form.game_username.label_tag }}
       {{ form.game_username }}
       <span class="field-help"></span>
       {{ form.game_username.errors }}
-    </p>
-    <p hidden>
+    </div>
+    <div hidden>
       {{ form.game_tag.label_tag }}
       {{ form.game_tag }}
       <span class="field-help"></span>
       {{ form.game_tag.errors }}
-    </p>
-    <p hidden>
+    </div>
+    <div hidden>
       {{ form.external_player_id.label_tag }}
       {{ form.external_player_id }}
       <span class="field-help"></span>
       {{ form.external_player_id.errors }}
-    </p>
+    </div>
     <input type="submit" value="Save">
   </form>
 
@@ -60,12 +60,12 @@ Template for django forms was used and can be found here: https://docs.djangopro
   <script>
     // Update the game fields based on the selected game title
     const gameTitleSelect = document.getElementById("id_game_title");
-    const otherGameRow = document.getElementById("id_other_game_title").closest("p");
-    const gameUsernameRow = document.getElementById("id_game_username").closest("p");
-    const gameTagRow = document.getElementById("id_game_tag").closest("p");
+    const otherGameRow = document.getElementById("id_other_game_title").closest("div");
+    const gameUsernameRow = document.getElementById("id_game_username").closest("div");
+    const gameTagRow = document.getElementById("id_game_tag").closest("div");
     const gameTagHelp = gameTagRow.querySelector(".field-help");
     const externalPlayerIdField = document.getElementById("id_external_player_id");
-    const externalPlayerIdRow = externalPlayerIdField.closest("p");
+    const externalPlayerIdRow = externalPlayerIdField.closest("div");
     const externalPlayerIdLabel = externalPlayerIdRow.querySelector("label");
     const accountNameHelp = gameUsernameRow.querySelector(".field-help");
     const externalPlayerIdHelp = externalPlayerIdRow.querySelector(".field-help");
