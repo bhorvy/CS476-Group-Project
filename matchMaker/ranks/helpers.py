@@ -40,6 +40,9 @@ for tier_name, first_value in valorant_tiers:
         VALORANT_CHOICES.append((str(first_value + subrank - 1), f"{tier_name} {subrank}"))
 VALORANT_CHOICES.append(("27", "Radiant"))
 
+VALORANT_REGIONS = ("na", "eu", "ap", "kr", "latam", "br")
+LEAGUE_REGIONS = ("na1", "br1", "la1", "la2","kr", "jp1", "eun1", "euw1","tr1" "ru", "oc1", "ph2","sg2", "th2", "tw2", "vn2")
+
 # base value is the IV division of each tier, and the other divisions add an offset
 LEAGUE_DIVISION_VALUES = {
     "IV": 0,
@@ -101,7 +104,7 @@ GAME_ACCOUNT_HELP = {
     },
     "League of Legends": {
         "label": "Platform region",
-        "help": "For example, na1, euw1, or kr.",
+        "help": "Use your region: na1, br1, la1, la2, kr, jp1, eun1, euw1, tr1, ru, oc1, ph2, sg2, th2, tw2, or vn2.",
         "account_name_help": "Enter your Riot game name.",
         "tag_help": "Enter your tag, for example NA1.",
     },

@@ -12,7 +12,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from .models import Tournament, Member, Team 
-from .ranks.helpers import GAME_TITLE_CHOICES, RANK_CHOICES, rank_choices_for_game
+from .ranks.helpers import GAME_TITLE_CHOICES, RANK_CHOICES, rank_choices_for_game, VALORANT_REGIONS, LEAGUE_REGIONS
 
 # list of values for Gender option
 GENDER = {
@@ -73,6 +73,12 @@ class GameLinkForm(forms.Form):
                 self.add_error("game_tag", "Enter your Riot tag.")
             if "#" in cleaned_data.get("game_tag", ""):
                 self.add_error("game_tag", "Enter your tag without #.")
+            if cleaned_data.get("game_title") == "Valorant":
+                if not cleaned_data.get("external_player_id") or cleaned_data.get("external_player_id") not in VALORANT_REGIONS:
+                    self.add_error("external_player_id", "Choose a valid region.")
+            if cleaned_data.get("game_title") == "League of Legends":
+                if not cleaned_data.get("external_player_id") or cleaned_data.get("external_player_id") not in LEAGUE_REGIONS:
+                    self.add_error("external_player_id", "Choose a valid region.")
         else:
             cleaned_data["game_tag"] = ""
         if cleaned_data.get("game_title") != "OTHER":
