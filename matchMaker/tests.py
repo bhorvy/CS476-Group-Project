@@ -1,6 +1,11 @@
 from django.test import TestCase
 
-from .forms import GameLinkForm, ManageTournament, ScoreSubmissionForm
+from .forms import GameLinkForm, ManageTournament, ScoreSubmissionForm, RegisterForm
+from .models import Tournament, Member
+from django.urls import reverse
+from time import perf_counter
+from django.contrib.auth.models import User
+import requests 
 #Robustness tests 
 #1. Admin: Manage tournament 2. User: game account inputs 3. User: create tournament inputs 4: user; input score 
 class RobustnessTests(TestCase):
@@ -108,3 +113,106 @@ class RobustnessTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors["player1_score"], ["This field is required."])
         self.assertEqual(form.errors["player2_score"], ["Enter a whole number."])
+
+
+# https://django-testing-docs.readthedocs.io/en/latest/views.html
+# https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
+class TimeEfficiencyTests(TestCase):
+    repeat_count = 10
+    # test the mean time of loading the deadlock API for rank syncing
+    def test_deadlock_api(self):
+        # this is my external player ID for testing purposes. As of now Im oracle 4.
+        #if not working, uncomment out the following code below
+        external_player_id = 76561198309725683
+        # API to get rank value
+        url = f"https://api.deadlock-api.com/v1/players/{external_player_id}/rank"
+
+        start_time = perf_counter()
+        # send request 10 times
+        for _ in range(self.repeat_count):
+            response = requests.get(url, headers={})
+        end_time = perf_counter()
+        
+        data = response.json();
+        # get badge value, mapping is in helpers.py
+        value = (data.get("badge"))
+        #self.assertIsNotNone(value)
+        self.assertEqual(value, 84)
+        self.assertEqual(response.status_code, 200)
+        print(f"Mean time taken to load deadlock API: {(end_time - start_time) / self.repeat_count} seconds")
+
+    #Test the time taken to load the register page 
+    def test_register_to_site(self):
+        start_time = perf_counter()
+        for _ in range(self.repeat_count):
+            response = self.client.get(reverse("signUpPage"))
+        end_time = perf_counter()
+        self.assertEqual(response.status_code, 200)
+        print(f"Mean time taken to load register page: {(end_time - start_time) / self.repeat_count} seconds")
+
+
+        # test the time taken to submit the form and redirect to the login page
+        start_time = perf_counter()
+        for i in range(self.repeat_count):
+            form_data = {
+                "username": f"testuser{i}",
+                "password": "testpassword",
+                "first_name": "test",
+                "last_name": "user",
+                "gender": "M",
+                "date_of_birth": "2000-01-01",
+            }
+            form = RegisterForm(data=form_data)
+            self.assertTrue(form.is_valid())
+            # submit the registration form
+            response = self.client.post(reverse("signUpPage"), data=form_data)
+            # check that the response status code is 302 (redirect)
+            self.assertEqual(response.status_code, 302)
+            # ensure the response redirects to the login page after successful registration
+            self.assertRedirects(response, reverse("loginPage"))
+
+        end_time = perf_counter()
+        print(f"Mean time taken to submit register form: {(end_time - start_time) / self.repeat_count} seconds")
+
+    # Test the time taken to load the tournament page
+    def test_load_tournament_page(self):
+        # create a large number of tournaments to test performance
+        for i in range(2000):
+            Tournament.objects.create(
+                name=f"Tournament {i}",
+                description="Test",
+                game_title="Deadlock",
+            )
+        start_time = perf_counter()
+        for _ in range(self.repeat_count):
+            response = self.client.get(reverse("tournamentList"))
+        end_time = perf_counter()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Tournament")
+        print(f"Mean time taken to load tournament page: {(end_time - start_time) / self.repeat_count} seconds")
+
+    def test_load_admin_member_list(self):
+        # create a number of members to populate admin member list page
+        for i in range(50):
+                user = User.objects.create_user(username=f"user{i}", password="testpassword")
+                Member.objects.create(
+                    user=user,
+                    firstname="test",
+                    lastname="user",
+                    gender="M",
+                    DOB="2000-01-01"
+                )
+        # create a superuser to access the admin member list page
+        User.objects.create_superuser('myuser', 'myemail@test.com', 'testpassword')
+        #login as super user 
+        self.client.login(username="myuser", password="testpassword")
+        start_time = perf_counter()
+        for _ in range(self.repeat_count):
+            # load the admin member list page
+            response = self.client.get(reverse("adminMemberList"))
+        end_time = perf_counter()
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Members")
+        print(f"Mean time taken to load admin member list page: {(end_time - start_time) / self.repeat_count} seconds")
+
+    
