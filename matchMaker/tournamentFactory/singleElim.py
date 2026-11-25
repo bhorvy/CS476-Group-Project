@@ -92,5 +92,11 @@ class SingleElimination(AbstractTournament):
                 self.handleWinner(0, i, matchPos[i]["players"][0]["player_id"])
         self.object.save()
 
+    def getPlayerMatchIds(self, roundId, matchId, isBracket = False):
+        print(type(roundId))
+        return [
+            self.object.layout["bracket"][roundId][matchId]["players"][0]["player_id"],
+            self.object.layout["bracket"][roundId][matchId]["players"][1]["player_id"]
+        ]
 
 

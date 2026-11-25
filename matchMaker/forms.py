@@ -11,7 +11,11 @@
 # List of important modules
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import Tournament, Member, Team 
+
+from matchMaker.tournamentFactory.doubleElim import DoubleElimination
+from matchMaker.tournamentFactory.pools import Pools
+from matchMaker.tournamentFactory.singleElim import SingleElimination
+from .models import Tournament, Member, TournamentRegistration 
 from .ranks.helpers import GAME_TITLE_CHOICES, RANK_CHOICES, rank_choices_for_game, VALORANT_REGIONS, LEAGUE_REGIONS
 
 # list of values for Gender option
@@ -166,7 +170,27 @@ class ScoreSubmissionForm(forms.Form):
         self.matchId = kwargs.pop('match_id', None)
         self.roundId = kwargs.pop('round_id', None)
         self.isBracket = kwargs.pop('is_bracket', None)
+        self.tid = kwargs.pop('tid', None)
         super().__init__(*args, **kwargs)
+        #Grab tournament info to populate labels with user names.
+
+        if(self.tid):
+            tournament = Tournament.objects.get(id=self.tid)
+            format = tournament.format
+            match format:
+                case "SINGLE_ELIM":
+                    tournament = SingleElimination(self.tid)
+                case "DOUBLE_ELIM":
+                    tournament = DoubleElimination(self.tid)
+                case "POOLS":
+                    tournament = Pools(self.tid)
+            userids = tournament.getPlayerMatchIds(int(self.roundId), int(self.matchId), self.isBracket)
+            self.fields['player1_score'].label = (("Null Player's Score") if userids[0] <= 0 else 
+                                                (f"{Member.objects.get(id=userids[0]).user.username}'s Score:"))
+            self.fields['player2_score'].label = (("Null Player's Score") if userids[1] <= 0 else 
+                                                (f"{Member.objects.get(id=userids[1]).user.username}'s Score:"))
+
+        #Set the other values in the hidden inputs so they can be passed along after the score gets submitted
         self.fields['roundVal'].initial = self.roundId
         self.fields['matchVal'].initial = self.matchId
         self.fields['isBracket'].initial = self.isBracket

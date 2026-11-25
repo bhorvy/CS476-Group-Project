@@ -42,6 +42,10 @@ class AbstractTournament(ABC):
     def handleByes(self):
         pass
 
+    @abstractmethod
+    def getPlayerMatchIds(self, roundId, matchId, isBracket):
+        pass
+
     def deleteTournament(self):
         self.object.delete()
 

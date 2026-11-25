@@ -96,9 +96,9 @@ Purpose: Code for the tournament management page
 
     <script>
         //function used to open the submit score popup for the match admin has selected 
-        async function adminScoreSubmission(){
+        async function adminScoreSubmission(tid){
             const selectedMatch= document.getElementById('pick_match').value;
-            const response= await fetch("/score-popup?"+selectedMatch);
+            const response= await fetch("/score-popup?"+selectedMatch+"&tid={{ tournament.id }}");
             const data= await response.text();
             document.getElementById('score_popup').innerHTML=data;
             const scoreForm=document.getElementById('score_popup').querySelector('form');
