@@ -93,6 +93,7 @@ Template for django forms was used and can be found here: https://docs.djangopro
   <ul>
     {% for account in accounts %}
       <li>
+        <p>
         {{ account.game_title }} — {{ account.game_username }}{% if account.game_tag %}#{{ account.game_tag }}{% endif %}{% if account.external_player_id %} ({{ account.external_player_id }}){% endif %}
         {% if account.game_title in ranked_games %}
           <p>Rank: {{ account.rank_or_elo|default:"not synced" }}</p>
@@ -101,6 +102,7 @@ Template for django forms was used and can be found here: https://docs.djangopro
             <button type="submit">Fetch {{ account.game_title }} rank</button>
           </form>
         {% endif %}
+        </p>
       </li>
     {% empty %}
       <li>No game accounts saved yet.</li>
