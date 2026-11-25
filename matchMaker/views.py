@@ -506,31 +506,46 @@ def _list_matches(tournament):
     #two bracket for double elimination
     labels = ["Round", ""]
     if tournament.format=="DOUBLE_ELIM":
+        bracketType = DoubleElimination(tournament.id)
         upper=layout["bracket"]["upper_bracket"]
         lower=layout["bracket"]["lower_bracket"]
         labels[0] = "Upper"
         labels[1] = "Lower"
     elif tournament.format == "POOLS":
+        bracketType = Pools(tournament.id)
         upper=layout["bracket"]
         lower=layout["pools"]
         labels[0] = "Bracket Round"
         labels[1] = "Pool"
-    else:    
+    else:
+        bracketType = SingleElimination(tournament.id)    
         upper=layout["bracket"]
         lower=[]
-    #adding every match to list from upper bracket.
+
+    #Valid matches are added to a list to be selected from. Any match with an invalid
+    #   userid is omitted.
+    #Adding matches to list from upper bracket.
     for round_id in range(len(upper)):
         for match_id in range(len(upper[round_id])):
-            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=True","label": f"{labels[0]} {round_id + 1}, Match {match_id + 1}"})
-    #adding every match to list from lower bracket.
+            userIds = bracketType.getPlayerMatchIds(round_id, match_id, True)
+            if(userIds[0] > 0 and userIds[1] > 0):
+                choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=True","label": 
+                                f"{labels[0]} {round_id + 1}, Match {match_id + 1}"})
+    #Adding matches to list from lower bracket.
     for round_id in range(len(lower)):
         if(tournament.format == "POOLS"):
             #Listing must omit the last array position in the pool.
             for match_id in range(6):
-                choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
+                userIds = bracketType.getPlayerMatchIds(round_id, match_id, False)
+                if(userIds[0] > 0 and userIds[1] > 0):
+                    choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": 
+                                    f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
         else:
             for match_id in range(len(lower[round_id])):
-                choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
+                userIds = bracketType.getPlayerMatchIds(round_id, match_id, False)
+                if(userIds[0] > 0 and userIds[1] > 0):
+                    choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": 
+                                f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
     return choices
 
 # Renders the tournament management page for an administrator.

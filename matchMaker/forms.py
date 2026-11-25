@@ -184,7 +184,8 @@ class ScoreSubmissionForm(forms.Form):
                     tournament = DoubleElimination(self.tid)
                 case "POOLS":
                     tournament = Pools(self.tid)
-            userids = tournament.getPlayerMatchIds(int(self.roundId), int(self.matchId), self.isBracket)
+            bracketBool = True if self.isBracket == "True" else False
+            userids = tournament.getPlayerMatchIds(int(self.roundId), int(self.matchId), bracketBool)
             self.fields['player1_score'].label = (("Null Player's Score") if userids[0] <= 0 else 
                                                 (f"{Member.objects.get(id=userids[0]).user.username}'s Score:"))
             self.fields['player2_score'].label = (("Null Player's Score") if userids[1] <= 0 else 
