@@ -317,6 +317,7 @@ def tournamentPage(request, tid):
         "tournament.html",
         {
             "tournament": tournament,
+            "tid": tid,
             "score_submittable": scoreSubmittable,
             "round": round_id,
             "match": match_id,
@@ -493,10 +494,9 @@ def editProfile(request):
 #   for the associated tournamnet.
 def scorePopup(request):
     if(request.method == "GET"):
-        print(request.GET.get('roundId'))
-        print(request.GET.get('matchId'))
+        
         form = ScoreSubmissionForm(round_id=request.GET.get('roundId'), match_id=request.GET.get('matchId'), 
-                                   is_bracket=request.GET.get('is_bracket'))
+                                   is_bracket=request.GET.get('is_bracket'), tid=request.GET.get('tid'))
         return render(request, 'modules/scoreSubmission.html', {'form': form})
  
 #listing all the matches in the backet for admit to edit it
@@ -504,20 +504,33 @@ def _list_matches(tournament):
     choices= []
     layout=tournament.layout
     #two bracket for double elimination
+    labels = ["Round", ""]
     if tournament.format=="DOUBLE_ELIM":
         upper=layout["bracket"]["upper_bracket"]
         lower=layout["bracket"]["lower_bracket"]
-    else:
+        labels[0] = "Upper"
+        labels[1] = "Lower"
+    elif tournament.format == "POOLS":
+        upper=layout["bracket"]
+        lower=layout["pools"]
+        labels[0] = "Bracket Round"
+        labels[1] = "Pool"
+    else:    
         upper=layout["bracket"]
         lower=[]
     #adding every match to list from upper bracket.
     for round_id in range(len(upper)):
         for match_id in range(len(upper[round_id])):
-            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=True","label": f"Round {round_id + 1}, Match {match_id + 1}"})
+            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=True","label": f"{labels[0]} {round_id + 1}, Match {match_id + 1}"})
     #adding every match to list from lower bracket.
     for round_id in range(len(lower)):
-        for match_id in range(len(lower[round_id])):
-            choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"Lower round {round_id + 1}, Match {match_id + 1}"})
+        if(tournament.format == "POOLS"):
+            #Listing must omit the last array position in the pool.
+            for match_id in range(6):
+                choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
+        else:
+            for match_id in range(len(lower[round_id])):
+                choices.append({"value": f"roundId={round_id}&matchId={match_id}&is_bracket=False","label": f"{labels[1]} {round_id + 1}, Match {match_id + 1}"})
     return choices
 
 # Renders the tournament management page for an administrator.
