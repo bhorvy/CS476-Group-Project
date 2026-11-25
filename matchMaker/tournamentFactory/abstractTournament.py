@@ -6,7 +6,7 @@
 # Purpose: Code for regular tournament
 
 from abc import ABC, abstractmethod
-from ..models import Tournament
+from ..models import Tournament, Member
 
 class AbstractTournament(ABC):
     def __init__(self, tid):
@@ -51,8 +51,8 @@ class AbstractTournament(ABC):
         self.object.save()
 
     def handleChampion(self, uid):
-        self.object.winner_id = uid
-        self.status = "COMPLETED"
+        self.object.winner = Member.objects.get(id=uid)
+        self.object.status = "COMPLETED"
         self.object.save()
     
     def updateStatus(self, status):

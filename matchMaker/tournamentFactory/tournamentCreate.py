@@ -47,8 +47,8 @@ class TournamentCreate:
 
     def createSingleElimBracket(self, players):
         bracket = []
-        currentRound = []
-        for i in range(0, len(players), 2):
+        currentRound = [None] * ((len(players))//2)
+        for i in range(0, math.ceil(len(players)) // 2, 2):
             match = {
                 "players": [
                     {"player_id": players[i], "score": 0},
@@ -56,7 +56,16 @@ class TournamentCreate:
                 ],
                 "winner_id": 0
             }
-            currentRound.append(match)
+            currentRound[i] = match
+            match = {
+                "players": [
+                    {"player_id": players[i+1], "score": 0},
+                    {"player_id": players[len(players)-2-i], "score": 0}
+                ],
+                "winner_id": 0
+                
+            }
+            currentRound[len(currentRound)-1-i] = match
         bracket.append(currentRound)
         
         # Generate subsequent rounds with empty matches
@@ -81,16 +90,24 @@ class TournamentCreate:
         lower_bracket = []
 
         #Upper bracket formation (similar to single elim)
-        currentRound = []
-        for i in range(0, len(players), 2):
+        currentRound = [None] * ((len(players))//2)
+        for i in range(0, math.ceil(len(players)) // 2, 2):
             match = {
                 "players": [
                     {"player_id": players[i], "score": 0},
-                    {"player_id": players[i + 1], "score": 0}
+                    {"player_id": players[len(players)-1-i], "score": 0}
                 ],
                 "winner_id": 0
             }
-            currentRound.append(match)
+            currentRound[i] = match
+            match = {
+                "players": [
+                    {"player_id": players[i+1], "score": 0},
+                    {"player_id": players[len(players)-2-i], "score": 0}
+                ],
+                "winner_id": 0
+            }
+            currentRound[len(currentRound)-1-i] = match
         upper_bracket.append(currentRound)
 
         while len(currentRound) > 1:
@@ -106,6 +123,18 @@ class TournamentCreate:
                 nextRound.append(match)
             upper_bracket.append(nextRound)
             currentRound = nextRound
+
+        #Add two more single-match rounds for the grand finals and the 
+        #   bracket reset.
+        nextRound = [{
+            "players": [
+                {"player_id": 0, "score": 0},
+                {"player_id": 0, "score": 0}
+            ],
+            "winner_id": 0
+        }]
+        upper_bracket.append(nextRound)
+        upper_bracket.append(nextRound)
 
         #Lower bracket function
         currentRound = upper_bracket[0]

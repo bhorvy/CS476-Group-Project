@@ -41,53 +41,71 @@ class DoubleElimination(AbstractTournament):
     def handleWinner(self, roundId, matchId, winnerId, isUpperBracket):
         data = self.layout
         bracketName = "upper_bracket" if isUpperBracket else "lower_bracket"
-        #Check if it is the finals. If so, only handle the winner's id.
-        if (roundId + 1) == len(data["bracket"][bracketName]):
-            data["bracket"][bracketName][roundId][matchId]["winner_id"] = winnerId
-            if(isUpperBracket):
-                loserSlotIndex = 1 if data["bracket"]["upper_bracket"][roundId][matchId]["players"][0]["player_id"] == winnerId else 0
-                loserId = data["bracket"]["upper_bracket"][roundId][matchId]["players"][loserSlotIndex]["player_id"]
-                (data["bracket"]["lower_bracket"][(roundId * 2) - 1][matchId]["players"][0]["player_id"]) = loserId
-            self.object.layout = data
-            self.object.save()
-            return
+        #Check if it is the finals. If so, handle the winner's id.
+        if(isUpperBracket):
+            if ((roundId + 1) == len(data["bracket"][bracketName]) or 
+                ((roundId == len(data["bracket"][bracketName])-2) and 
+                (data["bracket"][bracketName][roundId][matchId]["players"][0]["player_id"] == winnerId))):
+                data["bracket"][bracketName][roundId][matchId]["winner_id"] = winnerId
+                self.handleChampion(winnerId)
+                data["bracket"][bracketName][roundId][matchId]["winner_id"] = winnerId
+                #if(isUpperBracket):
+                    #loserSlotIndex = 1 if data["bracket"]["upper_bracket"][roundId][matchId]["players"][0]["player_id"] == winnerId else 0
+                    #loserId = data["bracket"]["upper_bracket"][roundId][matchId]["players"][loserSlotIndex]["player_id"]
+                    #(data["bracket"]["lower_bracket"][(roundId * 2) - 1][matchId]["players"][0]["player_id"]) = loserId
+                self.object.layout = data
+                self.object.save()
+                return
         
         if (isUpperBracket):
-            nextRoundMatchIndex = math.ceil((matchId + 1) / 2) - 1
-            playerSlotIndex = (matchId % 2)
-            # Update the layout with the winner of the match in the next round's specific player slot
-            data["bracket"]["upper_bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
-
-            #Put loser in the lower bracket.
-            nextRoundLen = len(data["bracket"]["lower_bracket"][roundId])
-            #Initial lower bracket seeding is different from the rest of the lower bracket.
-            #First round slotting is based on match position.
             loserSlotIndex = 1 if data["bracket"]["upper_bracket"][roundId][matchId]["players"][0]["player_id"] == winnerId else 0
             loserId = data["bracket"]["upper_bracket"][roundId][matchId]["players"][loserSlotIndex]["player_id"]
-            if (roundId == 0):
-                (data["bracket"]["lower_bracket"][roundId][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"]) = loserId
+            #If the loser final position wins the grand finals match, each member is moved to the next match
+            #   for the bracket reset.
+            if((roundId == len(data["bracket"][bracketName])-2) and 
+               (data["bracket"][bracketName][roundId][matchId]["players"][1]["player_id"] == winnerId)):
+                data["bracket"][bracketName][roundId + 1][matchId]["players"][0]["player_id"] = loserId
+                data["bracket"][bracketName][roundId + 1][matchId]["players"][1]["player_id"] = winnerId
             else:
-                if (roundId % 2 == 1):
-                    #If round is odd, move the loser to the opposite side of the lower bracket.
-                    (data["bracket"]["lower_bracket"][(roundId * 2) - 1][(matchId + (nextRoundLen // 2)) 
-                                                                            % nextRoundLen]["players"][0]["player_id"]) = loserId
-                else:
-                    #If round is even, move the loser to the same side of the lower bracket.
-                    (data["bracket"]["lower_bracket"][(roundId * 2) - 1][matchId]["players"][0]["player_id"]) = loserId
-            #Used to double-check the byes that got sent to the lower bracket.
-            if(roundId == 0):
-                self.handleLowerByes()
-
-        else:
-            #First round to second round layout is the same size so it does not follow typical elimination standards.
-            #Therefore, keep the same matchId for the players coming down from upper bracket.
-            if (roundId % 2 == 0):
-                data["bracket"]["lower_bracket"][roundId + 1][matchId]["players"][1]["player_id"] = winnerId
-            else:
-                #Loser bracket progression behaves similarly to single elimination
                 nextRoundMatchIndex = math.ceil((matchId + 1) / 2) - 1
                 playerSlotIndex = (matchId % 2)
-                data["bracket"]["lower_bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
+                # Update the layout with the winner of the match in the next round's specific player slot
+                data["bracket"]["upper_bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
+
+                #Put loser in the lower bracket.
+                nextRoundLen = len(data["bracket"]["lower_bracket"][roundId])
+                #Initial lower bracket seeding is different from the rest of the lower bracket.
+                #First round slotting is based on match position.
+                loserSlotIndex = 1 if data["bracket"]["upper_bracket"][roundId][matchId]["players"][0]["player_id"] == winnerId else 0
+                loserId = data["bracket"]["upper_bracket"][roundId][matchId]["players"][loserSlotIndex]["player_id"]
+                if (roundId == 0):
+                    (data["bracket"]["lower_bracket"][roundId][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"]) = loserId
+                else:
+                    if (roundId % 2 == 1):
+                        #If round is odd, move the loser to the opposite side of the lower bracket.
+                        (data["bracket"]["lower_bracket"][(roundId * 2) - 1][(matchId + (nextRoundLen // 2)) 
+                                                                                % nextRoundLen]["players"][0]["player_id"]) = loserId
+                    else:
+                        #If round is even, move the loser to the same side of the lower bracket.
+                        (data["bracket"]["lower_bracket"][(roundId * 2) - 1][matchId]["players"][0]["player_id"]) = loserId
+                #Used to double-check the byes that got sent to the lower bracket.
+                if(roundId == 0):
+                    self.handleLowerByes()
+
+        else:
+            #Put the winner of the last match of lower bracket (Loser's Finals) into second-last bracket (Grand Finals)
+            if (roundId + 1 == len(data["bracket"]["lower_bracket"])):
+                data["bracket"]["upper_bracket"][len(data["bracket"]["upper_bracket"])-2][0]["players"][1]["player_id"] = winnerId
+            else:
+                #First round to second round layout is the same size so it does not follow typical elimination standards.
+                #Therefore, keep the same matchId for the players coming down from upper bracket.
+                if (roundId % 2 == 0):
+                    data["bracket"]["lower_bracket"][roundId + 1][matchId]["players"][1]["player_id"] = winnerId
+                else:
+                    #Loser bracket progression behaves similarly to single elimination
+                    nextRoundMatchIndex = math.ceil((matchId + 1) / 2) - 1
+                    playerSlotIndex = (matchId % 2)
+                    data["bracket"]["lower_bracket"][roundId + 1][nextRoundMatchIndex]["players"][playerSlotIndex]["player_id"] = winnerId
 
         #Update the winner_id field of the completed match to denote it is completed.
         data["bracket"][bracketName][roundId][matchId]["winner_id"] = winnerId
