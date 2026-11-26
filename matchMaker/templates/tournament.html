@@ -50,25 +50,7 @@ Purpose: Code for tournament page
                     {{ maximum_rank_label|default:"No maximum" }}
                 </p>
             {% endif %}
-            {% if registrations %}
-            <!--
-                <ul>
-                    {% for entry in registrations %}
-                        {% if entry.team %}
-                            <li>
-                                Team {{ entry.team.name }}
-                                (registered by {{ entry.member.user.username }}):
-                                {% for teammate in entry.team.members.all %}
-                                    {{ teammate.user.username }}{% if not forloop.last %}, {% endif %}
-                                {% endfor %}
-                            </li>
-                        {% else %}
-                            <li>{{ entry.member.user.username }}</li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            -->
-            {% else %}
+            {% if not registrations %}
                 <p>No players have joined yet.</p>
             {% endif %}
             {% if user.is_authenticated %}
@@ -101,6 +83,13 @@ Purpose: Code for tournament page
         </div>
         
     {% else %}
+        {% if tournament.status == "COMPLETED"%}
+            <div id="registration">
+                <p>The tournament has been decided!</p>
+                <p>Congratulations to {{ champion.user.username }}</p>
+                <p>Thank you for playing!</p>
+            </div>
+        {% endif %}
         <div id="tournament-bracket">
             {% if format == "SINGLE_ELIM" %}
                 <h3 class="tournament-banner">Bracket</h3>

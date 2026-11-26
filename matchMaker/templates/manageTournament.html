@@ -25,7 +25,9 @@ Purpose: Code for the tournament management page
       {% if form.tournament_name.value %}
         <div>
           <button type="submit" name="action" value="delete_tournament">Delete Tournament</button>
-          <button type="submit" name="action" value="start_tournament">Start Tournament</button>
+          {% if tournament.status == "UPCOMING" %}
+            <button type="submit" name="action" value="start_tournament">Start Tournament</button>
+          {% endif %}
         </div>
       {% endif %}
       
@@ -84,7 +86,7 @@ Purpose: Code for the tournament management page
     maxRankSelect.value = savedMaxRank;
   </script>
   
-  {% if match_choices %}
+  {% if match_choices and not tournament.status == "UPCOMING"%}
     <h4>Score Submission</h4>
     <div id="admin-score">
       <select id="pick-match">

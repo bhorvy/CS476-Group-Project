@@ -275,6 +275,7 @@ def tournamentPage(request, tid):
     member = _member_or_none(request.user)
     registrations = _sync_tournament_roster(tournament.object)
     userList = TournamentRegistration.objects.filter(tournament=Tournament.objects.get(id=tid))
+    champion = Tournament.objects.get(id=tid).winner
     userInfo = {}
     for i in userList:
         userInfo[i.member.id] = i.member.user.username
@@ -329,6 +330,7 @@ def tournamentPage(request, tid):
             "user_info": userInfo,
             "minimum_rank_label": minimum_rank_label,
             "maximum_rank_label": maximum_rank_label,
+            "champion": champion
         },
     )
 
