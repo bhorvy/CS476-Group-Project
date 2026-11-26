@@ -40,7 +40,7 @@ class RobustnessTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors["max_rank"], ["Maximum rank must be at least the minimum rank."])
 
-    def test_user_game_account_inputs(self):
+    def test_member_game_account_inputs(self):
         #test missing other game title when game title is OTHER
         form_data = {
             "game_title": "OTHER",
@@ -63,7 +63,7 @@ class RobustnessTests(TestCase):
         self.assertEqual(form.errors["external_player_id"], ["Choose a valid region."])
 
 
-    def test_user_create_tournament_inputs(self):
+    def test_member_create_tournament_inputs(self):
         #test blank description, name, and other_game_title show errors when blank
         form_data = {
             "tournament_name": "",
@@ -119,6 +119,7 @@ class RobustnessTests(TestCase):
 # https://www.geeksforgeeks.org/python/time-perf_counter-function-in-python/
 class TimeEfficiencyTests(TestCase):
     repeat_count = 10
+    # i did not read the assignment, this test is not needed
     # test the mean time of loading the deadlock API for rank syncing
     def test_deadlock_api(self):
         # this is my external player ID for testing purposes. As of now Im oracle 4.
@@ -142,6 +143,7 @@ class TimeEfficiencyTests(TestCase):
         print(f"Mean time taken to load deadlock API: {(end_time - start_time) / self.repeat_count} seconds")
 
     #Test the time taken to load the register page 
+    # this test is not needed anymore, we only need 2
     def test_register_to_site(self):
         start_time = perf_counter()
         for _ in range(self.repeat_count):
