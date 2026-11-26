@@ -140,6 +140,26 @@ fieldset:has(#id_participants) {
   margin: 10px;
 }
 
+#admin-score{
+    padding: 0 50px 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#admin-score > * {
+  margin: 10px 0;
+}
+
+#admin-score select{
+  padding: 5px 10px;
+  min-width: 200px;
+}
+
+#admin-score form {
+  width: 500px;
+}
+
 /* Tournament List */
 #tournament-list form {
   position: fixed;

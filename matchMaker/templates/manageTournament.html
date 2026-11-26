@@ -85,24 +85,29 @@ Purpose: Code for the tournament management page
   </script>
   
   {% if match_choices %}
-    <h2>Submit Score</h2>
-    <select id="pick_match">
-      {% for choice in match_choices %}
-        <option value="{{ choice.value }}">{{ choice.label }}</option>
-      {% endfor %}
-    </select>
-    <button onclick="adminScoreSubmission()">Submit Score</button>
-    <div id="score_popup"></div>
+    <h4>Score Submission</h4>
+    <div id="admin-score">
+      <select id="pick-match">
+        {% for choice in match_choices %}
+          <option value="{{ choice.value }}">{{ choice.label }}</option>
+        {% endfor %}
+      </select>
+      <button onclick="adminScoreSubmission()">Submit Score</button>
+      <div id="score-popup"></div>
+    </div>
+    
 
     <script>
         //function used to open the submit score popup for the match admin has selected 
-        async function adminScoreSubmission(tid){
-            const selectedMatch= document.getElementById('pick_match').value;
+        async function adminScoreSubmission(){
+            const selectedMatch= document.getElementById('pick-match').value;
             const response= await fetch("/score-popup?"+selectedMatch+"&tid={{ tournament.id }}");
             const data= await response.text();
-            document.getElementById('score_popup').innerHTML=data;
-            const scoreForm=document.getElementById('score_popup').querySelector('form');
+            const scorePopup = document.getElementById('score-popup')
+            scorePopup.innerHTML=data;
+            const scoreForm=scorePopup.querySelector('form');
             scoreForm.action= "/tournament/{{ tournament.id }}/";
+            scorePopup.scrollIntoView();
         }
     </script>
     {% endif %}
