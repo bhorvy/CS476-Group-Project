@@ -152,3 +152,13 @@ class Pools(AbstractTournament):
                     self.handleWinner(i, j, pools[i][j]["players"][0]["player_id"], False)
         self.object.save()
 
+    def getPlayerMatchIds(self, roundId, matchId, isBracket):
+        playerList = [None, None]
+        if(isBracket):
+            playerList[0] = self.object.layout["bracket"][roundId][matchId]["players"][0]["player_id"]
+            playerList[1] = self.object.layout["bracket"][roundId][matchId]["players"][1]["player_id"]
+        else:
+            playerList[0] = self.object.layout["pools"][roundId][matchId]["players"][0]["player_id"]
+            playerList[1] = self.object.layout["pools"][roundId][matchId]["players"][1]["player_id"]
+        return playerList
+

@@ -25,7 +25,9 @@ Purpose: Code for the tournament management page
       {% if form.tournament_name.value %}
         <div>
           <button type="submit" name="action" value="delete_tournament">Delete Tournament</button>
-          <button type="submit" name="action" value="start_tournament">Start Tournament</button>
+          {% if tournament.status == "UPCOMING" %}
+            <button type="submit" name="action" value="start_tournament">Start Tournament</button>
+          {% endif %}
         </div>
       {% endif %}
       
@@ -84,25 +86,30 @@ Purpose: Code for the tournament management page
     maxRankSelect.value = savedMaxRank;
   </script>
   
-  {% if match_choices %}
-    <h2>Submit Score</h2>
-    <select id="pick_match">
-      {% for choice in match_choices %}
-        <option value="{{ choice.value }}">{{ choice.label }}</option>
-      {% endfor %}
-    </select>
-    <button onclick="adminScoreSubmission()">Submit Score</button>
-    <div id="score_popup"></div>
+  {% if match_choices and not tournament.status == "UPCOMING"%}
+    <h4>Score Submission</h4>
+    <div id="admin-score">
+      <select id="pick-match">
+        {% for choice in match_choices %}
+          <option value="{{ choice.value }}">{{ choice.label }}</option>
+        {% endfor %}
+      </select>
+      <button onclick="adminScoreSubmission()">Submit Score</button>
+      <div id="score-popup"></div>
+    </div>
+    
 
     <script>
         //function used to open the submit score popup for the match admin has selected 
         async function adminScoreSubmission(){
-            const selectedMatch= document.getElementById('pick_match').value;
-            const response= await fetch("/score-popup?"+selectedMatch);
+            const selectedMatch= document.getElementById('pick-match').value;
+            const response= await fetch("/score-popup?"+selectedMatch+"&tid={{ tournament.id }}");
             const data= await response.text();
-            document.getElementById('score_popup').innerHTML=data;
-            const scoreForm=document.getElementById('score_popup').querySelector('form');
+            const scorePopup = document.getElementById('score-popup')
+            scorePopup.innerHTML=data;
+            const scoreForm=scorePopup.querySelector('form');
             scoreForm.action= "/tournament/{{ tournament.id }}/";
+            scorePopup.scrollIntoView();
         }
     </script>
     {% endif %}

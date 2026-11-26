@@ -1,7 +1,7 @@
 from django.test import TestCase
 
-from .forms import GameLinkForm, ManageTournament, ScoreSubmissionForm, RegisterForm
-from .models import Tournament, Member
+from .forms import GameLinkForm, ManageTournament, ScoreSubmissionForm, RegisterForm,LoginForm,MemberProfileForm
+from .models import Tournament, Member,TournamentRegistration
 from django.urls import reverse
 from time import perf_counter
 from django.contrib.auth.models import User
@@ -217,4 +217,100 @@ class TimeEfficiencyTests(TestCase):
         self.assertContains(response, "Members")
         print(f"Mean time taken to load admin member list page: {(end_time - start_time) / self.repeat_count} seconds")
 
-    
+#correctness testing
+# 1.User:login into account 2.User:user update their personal information 3.Admin: banning a member account 4.User: signing up for tournments
+class CorrectnessTests(TestCase):
+    #Testing the user login with correct username and password
+    def test_user_login(self):
+        user= User.objects.create_user(username="user123",password="password123")
+        Member.objects.create(
+            user=user,
+            firstname="userfirst",
+            lastname="userlast",
+            gender="M",
+            DOB="2003-05-04"
+        )
+        form_data= {
+            "username":"user123",
+            "password":"password123"
+        }
+        form= LoginForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        response= self.client.post(reverse("loginPage"),data=form_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("homePage"))
+
+    # Testing that user can update their personal information 
+    def test_user_edit_profile(self):
+        user= User.objects.create_user(username="user123",password="password123")
+        member= Member.objects.create(
+            user=user,
+            firstname="userfirst",
+            lastname="userlast",
+            gender="M",
+            DOB="2003-05-04"
+        )
+        self.client.login(username="user123",password="password123")
+        form_data= {
+            "firstname":"first123",
+            "lastname":"last123",
+            "gender":"M",
+            "DOB":"2004-05-02"
+        }
+        form= MemberProfileForm(data=form_data)
+        self.assertTrue(form.is_valid())
+        response= self.client.post(reverse("editProfile"),data=form_data)
+        self.assertEqual(response.status_code, 302)
+        # checking if the information is updated
+        member.refresh_from_db()
+        self.assertEqual(member.firstname,"first123")
+        self.assertEqual(member.lastname,"last123")
+        self.assertEqual(str(member.DOB),"2004-05-02")
+
+    # Testing if admin can ban a user 
+    def test_admin_ban_member(self):
+        user= User.objects.create_user(username="user123",password="password123")
+        member= Member.objects.create(
+            user=user,
+            firstname="first123",
+            lastname="last123",
+            gender="M",
+            DOB="2003-05-03"
+        )
+        # creating admin to ban member
+        User.objects.create_superuser('admin','admin@test.com','admin123')
+        self.client.login(username="admin",password="admin123")
+        form_data= {
+            "reason": "baned for testing"
+        }
+        #member id is for the url 
+        response= self.client.post(reverse("adminBanMember",args=[member.id]),data=form_data)
+        self.assertRedirects(response, reverse("adminMemberList"))
+        # checking if the member is baned with reason 
+        member.refresh_from_db()
+        self.assertTrue(member.is_banned)
+        self.assertEqual(member.ban_reason,"baned for testing")
+
+    # Testing if the user can signup for tournament
+    def test_user_tournament_signup(self):
+        user= User.objects.create_user(username="user123",password="password123")
+        member= Member.objects.create(
+            user=user,
+            firstname="first123",
+            lastname="last123",
+            gender="M",
+            DOB="2005-09-05"
+        )
+        #creating tournament
+        tournament= Tournament.objects.create(
+            name="test tournament",
+            description="created tournament for testing",
+            game_title="Deadlock",
+            max_participants=8
+        )
+        self.client.login(username="user123",password="password123")
+        #tournament id is for the url
+        response = self.client.post(reverse("registerTournament",args=[tournament.id]))
+        self.assertRedirects(response, reverse("tournamentPage",args=[tournament.id]))
+        # checking if the is user is signedup and exist in the tournament
+        self.assertTrue(TournamentRegistration.objects.filter(tournament=tournament,member=member).exists())
