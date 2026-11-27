@@ -592,7 +592,18 @@ def manageTournament(request, tid):
                 #If any participants were added, they will also need to be synced to the TournamentRegistration model,
                 #   and any related values need to be updated like participant count.
                 participants= data["participants"]
-                if participants.count() > data["max_participants"]:
+                # Once the tournament is ongoing, the roster and format are locked. Regenerating the layout
+                #   wipes the existing matches, scores, and winners.
+                if tournament.status != Tournament.Status.UPCOMING:
+                    current_ids = list(tournament.participants.values_list('id', flat=True))
+                    if list(participants.values_list('id', flat=True)) != current_ids or data["format"] != tournament.format:
+                        form.add_error(None, "Participants and format can't be changed after the tournament has started.")
+                    else:
+                        tournament.name = data["tournament_name"]
+                        tournament.description = data["description"]
+                        tournament.start_date = data["start_date"]
+                        tournament.save()
+                elif participants.count() > data["max_participants"]:
                     form.add_error("participants", "The selected participants exceed the tournament capacity.")
                 else:
                     # Set rank constraints based on selected game
