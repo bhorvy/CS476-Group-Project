@@ -29,16 +29,44 @@ Purpose: Code for what each page looks like
 </html>
 
 {% if user.is_authenticated %}
-<script> 
+<div id="notification-popup" hidden>
+    <div>
+        {% csrf_token %}
+        <p id="notification-message"></p>
+        <button id="notification-button">Confirm</button>
+    </div>
+</div>
+<script>
+const popup = document.getElementById('notification-popup');
+const messageP = document.getElementById('notification-message');
+const button = document.getElementById('notification-button');
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+let currentNotification = null;
+
 async function checkTournamentNotifications() {
     const response = await fetch("{% url 'tournamentNotifications' %}");
     const data = await response.json();
-    
-    for (const notification of data.notifications) {
-        // can change it to not be an alert, easy implementation for now
-            alert(notification.message);
-        }
+    if (data.notifications.length > 0) {
+        //display the noticiation, unhide the popup
+        currentNotification = data.notifications[0];
+        messageP.textContent = currentNotification.message;
+        popup.hidden = false;
     }
+}
+
+button.addEventListener('click', async () => {
+    let form = new FormData();
+    form.append('id', currentNotification.id);
+    //waititng for the fetch to complete so it doesnt render twice
+    //send id to views so the notification can be marked as read
+    await fetch("{% url 'acknowledgeTournamentNotifications' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: form
+    });
+    popup.hidden = true;
+    currentNotification = null;
+});
 
 checkTournamentNotifications();
 //check every 5 seconds for notifications

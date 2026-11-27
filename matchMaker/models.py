@@ -160,8 +160,9 @@ class TournamentNotification(models.Model):
   )
   tournament = models.ForeignKey(
     Tournament,
-    on_delete=models.CASCADE,
+    on_delete=models.SET_NULL,
     related_name="notifications",
+    null=True,
   )
   message = models.CharField(max_length=255)
   created_at = models.DateTimeField(auto_now_add=True)

@@ -234,7 +234,7 @@ def tournamentPage(request, tid):
             notify_tournament_updated(
             tournament.object,
             members,
-            "Your match score was updated.",
+            f"Your score in {tournament.object.name} was updated.",
             )
             if form.cleaned_data['matchCompleted']:
                 if not tournament.determineWinner(round_id, match_id, is_bracket):
@@ -261,7 +261,7 @@ def tournamentPage(request, tid):
             notify_tournament_updated(
             tournament.object,
             winner,
-            "You advance, please refer to the bracket for your next match.",
+            f"You advance in {tournament.object.name}. Check the bracket for your next match.",
             )       
 
             return redirect(request.path)
@@ -575,10 +575,15 @@ def manageTournament(request, tid):
                         tournamentType = Pools(tid)
                 action = request.POST.get("action")
                 if(action == "delete_tournament"):
+                    # Notify before deleting; the notice is kept with tournament set to NULL.
+                    notify_tournament_updated(tournament, tournament.participants.all(),
+                                              f"Tournament {tournament.name} was deleted.")
                     tournamentType.deleteTournament()
                     return HttpResponseRedirect(f'/tournament/') 
                 elif(action == "start_tournament"):
                     tournamentType.startTournament()
+                    notify_tournament_updated(tournament, tournament.participants.all(),
+                                              f"Tournament {tournament.name} has started. Check the bracket for your first match.")
                     return HttpResponseRedirect(f'/tournament/{tournament.id}/')
                 #If those buttons were not press, the submit button was pressed instead.
                 #Handle the form as a result.
@@ -619,7 +624,11 @@ def manageTournament(request, tid):
                                 registration.save()
                                 
                         # remove registrations for players who were unselected
-                        TournamentRegistration.objects.filter(tournament=tournament).exclude(member__in=participants).delete()
+                        removed_registrations = TournamentRegistration.objects.filter(tournament=tournament).exclude(member__in=participants)
+                        removed_members = Member.objects.filter(pk__in=removed_registrations.values_list('member_id', flat=True))
+                        notify_tournament_updated(tournament, removed_members,
+                                                  f"You were removed from Tournament{tournament.name}.")
+                        removed_registrations.delete()
                         _sync_tournament_roster(tournament)
                         tournament.current_participants = participants.count()
                         tournament.save()
@@ -754,12 +763,7 @@ def tournamentNotifications(request):
         TournamentNotification.objects.filter(
         member = request.user.member,
         is_read=False,
-    ))
-
-    
-    for notification in notifications:
-        notification.is_read = True
-        notification.save(update_fields=["is_read"])
+    ).order_by("created_at"))
     
     return JsonResponse({
         "notifications": [
@@ -771,6 +775,13 @@ def tournamentNotifications(request):
             for notification in notifications
         ]
     })
+
+@login_required
+def acknowledgeTournamentNotifications(request):
+    notification_id = request.POST.get("id")
+    TournamentNotification.objects.filter(member=request.user.member, id=notification_id).update(is_read=True)
+
+    return HttpResponse()
 
 #only allow admin to open page
 def admin_required(view_func):
