@@ -15,6 +15,24 @@ Purpose: Styling for tournament lists
     align-items: center;
 }
 
+/* Styling for tournament list links */
+#tournament-lists {
+    text-align: center;
+    padding-bottom: 20px;
+}
+
+/* same styling as buttons */
+#tournament-lists > a {
+    text-decoration: none;
+    border-radius: 10px;
+    background-image: linear-gradient(to top, teal, turquoise);
+    padding: 10px 20px;
+    color: white;
+    border:none;
+    font-weight:bold;
+    border: 2px solid black;
+}
+
 /* Styling for table container */
 #table-container{
     width:80%;

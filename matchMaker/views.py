@@ -575,7 +575,7 @@ def manageTournament(request, tid):
                         tournamentType = Pools(tid)
                 action = request.POST.get("action")
                 if(action == "delete_tournament"):
-                    # Notify before deleting; the notice is kept with tournament set to NULL.
+                    # Notify before deleting tournament
                     notify_tournament_updated(tournament, tournament.participants.all(),
                                               f"Tournament {tournament.name} was deleted.")
                     tournamentType.deleteTournament()
@@ -677,7 +677,7 @@ def manageTournament(request, tid):
 def TournamentList(request, id=1):
     #Utilize the builtin django paginator to limit the amount of entries per page.
     pageNumber = request.GET.get('page') or 1
-    tournamentList = Tournament.objects.all().order_by('id')
+    tournamentList = Tournament.objects.exclude(status=Tournament.Status.COMPLETED).order_by('id')
     paginator = Paginator(tournamentList, 10)
 
     try:
@@ -687,7 +687,39 @@ def TournamentList(request, id=1):
     except EmptyPage:
         page = paginator.get_page(paginator.num_pages)
 
-    return render(request, 'tournamentList.html', {'page':page})
+    return render(request, 'tournamentList.html', {'page':page, 'list_title': 'Current Tournaments'})
+
+@never_cache
+def pastTournaments(request):
+    pageNumber = request.GET.get('page') or 1
+    tournaments = Tournament.objects.filter(status=Tournament.Status.COMPLETED).order_by('-id')
+    paginator = Paginator(tournaments, 10)
+
+    try:
+        page = paginator.get_page(pageNumber)
+    except PageNotAnInteger:
+        page = paginator.get_page(1)
+    except EmptyPage:
+        page = paginator.get_page(paginator.num_pages)
+
+    return render(request, 'tournamentList.html', {'page': page, 'list_title': 'All Past Tournaments'})
+
+@login_required
+@never_cache
+def myTournaments(request):
+    pageNumber = request.GET.get('page') or 1
+    member = _member_or_none(request.user)
+    tournaments = Tournament.objects.filter(participants=member)
+    paginator = Paginator(tournaments.order_by('-id'), 10)
+
+    try:
+        page = paginator.get_page(pageNumber)
+    except PageNotAnInteger:
+        page = paginator.get_page(1)
+    except EmptyPage:
+        page = paginator.get_page(paginator.num_pages)
+
+    return render(request, 'tournamentList.html', {'page': page, 'list_title': 'My Tournaments'})
 
 #Method for checking if there is a user and if that user has a Member role.
 def _member_or_none(user):
